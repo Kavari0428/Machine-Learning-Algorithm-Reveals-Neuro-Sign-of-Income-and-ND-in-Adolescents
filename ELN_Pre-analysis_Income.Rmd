@@ -1,0 +1,1973 @@
+---
+title: "Pre-analysis"
+output: html_document
+date: "2024-10-05"
+---
+
+# Miscellan. Settings
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+
+
+```{r special settings}
+cols = c("Brain" = "pink","Demographic" = "lavender")
+repeats = 1
+seed = 37431
+set.seed(seed)
+
+
+```
+
+```{r Loading data and libraries}
+library(haven)
+library(readxl)
+library(glmnet)
+library(caret)
+library(tidyverse)
+library(grid)
+library(MASS)
+library(Hmisc)
+library(ggthemes)
+library(ggsignif)
+library(ggpubr)
+library(gt)
+library(datawizard)
+
+#setting working directory 
+setwd("~/ML_Projects")
+
+#Loading  baseline datasets 
+#dat <- read_sav("ABCD_ksads-and-CBCL_fsqc_SRS_withABCDincl_short_2023-10-27.sav")
+#dat = read_csv("cbcl_a.csv")
+#dti = read_excel("Structural/DTI/abcd_dti_p101.xlsx")
+#funcbrain = read_excel("Functional/abcd_betnet02_2024-07-15.xlsx")
+#strbrain <- read_excel("Structural/abcd_smrip101_2024-07-15.xlsx")
+#strbrain2 <- read_excel("Structural/abcd_smrip201_2024-07-15.xlsx")
+
+#funcbrain = read_csv("Functional/funcbrain_a.csv")
+#funcbrain = funcbrain[,-1]
+#failed regressing out site experiment
+#strbrain = read_csv("Structural/strbrain_a.csv")
+#strbrain = strbrain[,-1]
+#strbrain2 = read_csv("Structural/strbrain2_a.csv")
+
+# Longitudinal 
+
+##Non-Brain data loading
+cbcl_5_1 <- read_csv("5.1 Release/Non-Brain/mh_p_cbcl.csv") %>% dplyr::select("src_subject_id","eventname","cbcl_scr_syn_attention_t","cbcl_scr_syn_external_t","cbcl_scr_syn_internal_t")
+adi <- read_csv("5.1 Release/Non-Brain/led_l_adi.csv") %>% dplyr::select("src_subject_id","eventname","reshist_addr1_adi_perc")
+coi = read_csv("5.1 Release/Non-Brain/led_l_coi(in).csv") %>%
+  dplyr::select("src_subject_id","eventname","reshist_addr1_coi_r_coi_nat")
+IQ_5_1 <- read_csv("5.1 Release/Non-Brain/nc_y_nihtb.csv") %>% dplyr::select("src_subject_id","eventname","nihtbx_totalcomp_agecorrected")
+age_5_1 <- read_csv("5.1 Release/Non-Brain/abcd_y_lt.csv") %>% dplyr::select("src_subject_id","eventname","interview_age","site_id_l","rel_family_id")
+demo_5_1 <- read_csv("5.1 Release/Non-Brain/abcd_p_demo.csv") %>% dplyr::select("src_subject_id","eventname","race_ethnicity","demo_sex_v2","demo_comb_income_v2")
+inclusion_flags_5_1 <- read_csv("5.1 Release/Non-Brain/mri_y_qc_incl(in).csv") %>% dplyr::select("src_subject_id","eventname","imgincl_t1w_include","imgincl_dmri_include","imgincl_rsfmri_include")
+motion_5_1_rsfmri <- read_csv("5.1 Release/Non-Brain/mri_y_qc_motion(in).csv") %>% dplyr::select("src_subject_id","eventname","rsfmri_meanmotion")
+motion_5_1_dmri <- read_csv("5.1 Release/Non-Brain/mri_y_qc_motion(in).csv") %>% dplyr::select("src_subject_id","eventname","dmri_meanmotion")
+scanner_5_1 <- read_csv("5.1 Release/Non-Brain/mri_y_adm_info.csv") %>% dplyr::select("src_subject_id","mri_info_deviceserialnumber","eventname")
+
+##Fuzzy Cluster data loading 
+cf_Area_5_1 <- read_csv("5.1 Release/Fuzzy_Clusters/mri_y_smr_area_fzy.csv")
+cf_Sulc_5_1 <- read_csv("5.1 Release/Fuzzy_Clusters/mri_y_smr_sulc_fzy.csv")
+cf_Thickness_5_1 <- read_csv("5.1 Release/Fuzzy_Clusters/mri_y_smr_thk_fzy.csv")
+cf_Volume_5_1 <- read_csv("5.1 Release/Fuzzy_Clusters/mri_y_smr_vol_fzy.csv")
+
+##Non-fuzzy structural data loading 
+intracranialv = read_csv("5.1 Release/Structural_non_fuzzy/mri_y_smr_vol_aseg.csv") %>% dplyr::select(contains("subject"),eventname,contains("intracranialv"))
+area_5_1 <- read_csv("5.1 Release/Structural_non_fuzzy/mri_y_smr_area_dsk.csv")
+vol_5_1 <- read_csv("5.1 Release/Structural_non_fuzzy/mri_y_smr_vol_dsk.csv")
+thick_5_1 <- read_csv("5.1 Release/Structural_non_fuzzy/mri_y_smr_thk_dsk.csv")
+sulc_5_1 <- read_csv("5.1 Release/Structural_non_fuzzy/mri_y_smr_sulc_dsk.csv")
+t1_white_5_1 <- read_csv("5.1 Release/Structural_non_fuzzy/mri_y_smr_t1_white_dsk.csv")
+t1_gray_5_1 <- read_csv("5.1 Release/Structural_non_fuzzy/mri_y_smr_t1_gray_dsk.csv")
+t1_contrast_5_1 <- read_csv("5.1 Release/Structural_non_fuzzy/mri_y_smr_t1_contr_dsk.csv")
+cf_Volume_5_1 <- read_csv("5.1 Release/Fuzzy_Clusters/mri_y_smr_vol_fzy.csv")
+cf_WIntensity_5_1 = read_csv("5.1 Release/Fuzzy_Clusters/mri_y_smr_t1_white_fzy.csv")
+cf_GIntensity_5_1 = read_csv("5.1 Release/Fuzzy_Clusters/mri_y_smr_t1_gray_fzy.csv")
+cf_Contrast_5_1 = read_csv("5.1 Release/Fuzzy_Clusters/mri_y_smr_t1_contr_fzy.csv")
+                        
+
+
+#Functional 
+Func_5_1 <- read_csv("5.1 Release/Functional/mri_y_rsfmr_cor_gp_gp.csv")
+
+#DTI loading
+DTI_5_1_vol <- read_csv("5.1 Release/DTI/mri_y_dti_vol_is_at.csv")
+
+DTI_5_1_FA <- read_csv("5.1 Release/DTI/mri_y_dti_fa_is_at.csv")
+DTI_5_1_FA_GM <- read_csv("5.1 Release/DTI/mri_y_dti_fa_is_gm_dsk.csv")
+DTI_5_1_FA_ASEG <- read_csv("5.1 Release/DTI/mri_y_dti_fa_is_aseg.csv")
+
+DTI_5_1_MD <- read_csv("5.1 Release/DTI/mri_y_dti_md_is_at.csv")
+DTI_5_1_MD_GM <- read_csv("5.1 Release/DTI/mri_y_dti_md_is_gm_dsk.csv")
+DTI_5_1_MD_ASEG <- read_csv("5.1 Release/DTI/mri_y_dti_md_is_aseg.csv")
+
+
+
+```
+
+```{r Parallel Computing set up}
+# Load required libraries
+library(doParallel)
+
+closeAllConnections()
+# Set up the parallel backend
+num_cores <- detectCores()
+cluster <- makeCluster(num_cores-1)  # Reserve 1 core for the OS
+registerDoParallel(cluster)
+
+
+```
+
+# Data Conditioning
+
+## Baseline
+
+```{r Demographics and behavioral metric}
+#cbcl = dat %>% dplyr::select(ends_with("_r")) %>% 
+ #              cbind(inflag = dat$imgincl_t1w_include,
+ #                    ID = dat$ID,
+ #                    age = dat$interview_age_v3,
+ #                    race = as.factor(dat$race_ethnicity),
+ #                    sex = as.factor(dat$sex_NEW),
+#                     IQ = dat$nihtbx_totalcomp_agecorrected,
+#                     fam = dat$rel_family_id,
+#                     site = as.factor(dat$site_id_l),
+#                     scanner = #as.factor(dat$mri_info_manufacturers),
+  #                   .) %>%
+   #            subset(.,inflag == 1) %>%
+    #           mutate(.,inflag = NULL)
+start_amount = nrow(age_5_1 %>% filter(eventname == "baseline_year_1_arm_1"))
+t = merge(age_5_1,cbcl_5_1, by = c("src_subject_id","eventname")) %>% filter(eventname == "baseline_year_1_arm_1")
+t = merge(adi,t, by = c("src_subject_id","eventname"))
+t = merge(coi,t, by = c("src_subject_id","eventname"))
+t = merge(demo_5_1,t, by = c("src_subject_id","eventname"))
+t = merge(t,IQ_5_1, by = c("src_subject_id","eventname"))
+t = merge(t,inclusion_flags_5_1, by = c("src_subject_id","eventname"))
+t = merge(t,scanner_5_1, by = c("src_subject_id","eventname"))
+colnames(t)[1] = "ID"
+colnames(t)[length(t)] = "scanner"
+T1_Exclusion = length(which(t$imgincl_t1w_include == 0))
+rsfmri_Exclusion = length(which(t$imgincl_rsfmri_include == 0))
+rsfmri_Exclusion = rsfmri_Exclusion-length(which(t$imgincl_rsfmri_include == 0 & t$imgincl_t1w_include == 0))
+dmri_Exclusion = length(which(t$imgincl_dmri_include == 0))
+dmri_Exclusion = dmri_Exclusion - length(which(t$imgincl_rsfmri_include == 0& t$imgincl_t1w_include == 0&t$imgincl_dmri_include == 0))
+cbcl = t 
+cbcl = cbcl %>% dplyr::select(-imgincl_t1w_include,-imgincl_dmri_include,-imgincl_rsfmri_include)
+colnames(cbcl) = c("ID",
+                   "eventname",
+                  "race",
+                  "sex",
+                  "income",
+                  "coi",
+                  "adi",
+                  "age",
+                  "site",
+                  "fam",
+                  "CBCL_Attention",
+                  "CBCL_Externalizing",
+                  "CBCL_Internalizing",
+                  "IQ",
+                  "scanner")
+cbcl$income = if_else(cbcl$income %in% c(777,999),NA,cbcl$income)
+missing_demo_data = nrow(cbcl)-nrow(na.omit(cbcl))
+#cbcl = na.omit(cbcl)
+cbcl$income = ordered(cbcl$income) 
+
+cbcl$adi_cat = ordered(if_else(cbcl$adi >= mean(cbcl$adi,na.rm = TRUE),"Yes","No"),levels = c("Yes", "No"))
+cbcl$coi_cat = ordered(if_else(cbcl$coi >= mean(cbcl$coi,na.rm = TRUE),"Yes","No"),levels = c("Yes", "No"))
+                  
+#cbcl = cbcl %>% dplyr::select(c("ID","race","sex","age","IQ","site","scanner","fam","cbcl_scr_syn_attention_r","cbcl_scr_syn_external_r","cbcl_scr_syn_internal_r")) 
+
+#colnames(cbcl)[9:11] = c("CBCL Attention","CBCL Externalizing","CBCL Internalizing")
+cbcl$sex = as.factor(cbcl$sex)
+cbcl$race = as.factor(cbcl$race)  
+cbcl$site = as.factor(cbcl$site)
+cbcl$scanner = as.factor(cbcl$scanner)
+cbcl$income = as.factor(cbcl$income)
+cbcl$fam = as.factor(cbcl$fam)
+ 
+#naming races
+levels(cbcl$race) = c("White","Black","Hispanic","Asian","Other")
+
+#naming sexes 
+levels(cbcl$sex) = c("Male","Female","Other")
+
+
+#cbcl = cbcl %>% dplyr::select(-CBCL_Attention,-CBCL_Externalizing,-CBCL_Internalizing)
+cbcl = na.omit(cbcl)
+#cbcl$CBCL_Attention = log(cbcl$CBCL_Attention+1)
+#cbcl$CBCL_Externalizing = log(cbcl$CBCL_Externalizing+1)
+#cbcl$CBCL_Internalizing = log(cbcl$CBCL_Internalizing+1)
+
+```
+
+```{r brain features merging}
+colnames(inclusion_flags_5_1)[1] = "ID"
+cbcl = merge(cbcl,inclusion_flags_5_1, by = c("ID","eventname"))
+cbcl = cbcl %>% filter(imgincl_t1w_include == 1,imgincl_rsfmri_include == 1,imgincl_dmri_include == 1)
+cbcl = cbcl %>% dplyr::select(-imgincl_t1w_include,-imgincl_dmri_include,-imgincl_rsfmri_include)
+datasetbuild = function(data1,data2,data3,data4,demo_data){
+  merge1 = merge(data1,data2, by = c("src_subject_id","eventname"))
+  merge2 = merge(data3,data4, by = c("src_subject_id","eventname"))
+  
+  final_merge = merge(merge1,merge2, by = c("src_subject_id","eventname")) 
+  colnames(final_merge)[1] = "ID"
+  final_merge = merge(demo_data,final_merge, by = c("ID","eventname"))
+  
+  final_merge = final_merge %>% dplyr::group_by(eventname) %>% group_split()
+  return(final_merge)
+  
+  
+}
+
+#Structural
+struc_5_1 = datasetbuild(area_5_1,vol_5_1,thick_5_1,sulc_5_1,cbcl)
+colnames(intracranialv)[1] = "ID"
+strbrain = merge(struc_5_1[[1]],intracranialv,by = c("ID","eventname"))
+struc_missing = nrow(strbrain)-nrow(na.omit(strbrain))
+strbrain = na.omit(strbrain) 
+#colnames(t1_gray_5_1)[1] = "ID"
+#colnames(t1_white_5_1)[1] = "ID"
+#colnames(t1_contrast_5_1)[1] = "ID"
+#strbrain = merge(strbrain,t1_gray_5_1, by = c("ID","eventname"))
+#strbrain = merge(strbrain,t1_white_5_1, by = c("ID","eventname"))
+#strbrain = merge(strbrain,t1_contrast_5_1, by = c("ID","eventname"))
+#strbrain[,11:294] = strbrain[,11:294]/strbrain[,295] 
+#strbrain = strbrain[,-295]
+families <- unique(strbrain$fam)
+#train = createDataPartition(strbrain$income,p = 0.8)[[1]]
+train_families <- sample(families, size = floor(0.8 * length(families)))
+#strbrain_train = strbrain[train,]
+#strbrain_test = strbrain[-train,]
+
+strbrain_train <- strbrain %>% filter(fam %in% train_families) 
+strbrain_test <- strbrain %>% filter(!fam %in% train_families)
+#strbrain_train = strbrain_train[,-which(colnames(strbrain_train)=="fam")]
+#strbrain_test = strbrain_test[,-which(colnames(strbrain_test)=="fam")]
+
+struc_merged_no_intensity = strbrain_train
+struc_merged_no_intensity_test = strbrain_test
+
+#Functional
+Func_5_1 = merge(motion_5_1_rsfmri,Func_5_1, by = c("src_subject_id",
+                                                    "eventname"))
+colnames(Func_5_1)[1] = "ID"
+Func_5_1 = merge(cbcl,Func_5_1, by = c("ID",
+                                       "eventname"))
+
+func_missing = nrow(Func_5_1)- nrow(na.omit(Func_5_1))
+
+#DTI 
+DTI_5_1 = merge(DTI_5_1_FA,DTI_5_1_FA_GM, by = c("src_subject_id","eventname"))
+DTI_5_1 = merge(DTI_5_1,DTI_5_1_FA_ASEG,by = c("src_subject_id","eventname"))
+DTI_5_1 = merge(DTI_5_1,DTI_5_1_MD,by = c("src_subject_id","eventname"))
+DTI_5_1 = merge(DTI_5_1,DTI_5_1_MD_GM,by = c("src_subject_id","eventname"))
+DTI_5_1 = merge(DTI_5_1,DTI_5_1_MD_ASEG,by = c("src_subject_id","eventname"))
+DTI_5_1 = merge(DTI_5_1,DTI_5_1_vol,by = c("src_subject_id","eventname"))
+
+dti_missing = nrow(DTI_5_1)- nrow(na.omit(DTI_5_1))
+
+DTI_5_1 = merge(motion_5_1_dmri,DTI_5_1, by = c("src_subject_id",
+                                                "eventname"))
+
+colnames(DTI_5_1)[1] = "ID"
+DTI_5_1 = merge(cbcl,DTI_5_1, by = c("ID",
+                                     "eventname"))
+
+func_merged = semi_join(Func_5_1,struc_merged_no_intensity, by = "ID") %>% na.omit()
+dti_merged = semi_join(DTI_5_1,struc_merged_no_intensity, by = "ID") %>% na.omit()
+func_merged_test = anti_join(Func_5_1,struc_merged_no_intensity, by = "ID") %>% na.omit()
+dti_merged_test = anti_join(DTI_5_1,struc_merged_no_intensity, by = "ID") %>% na.omit()
+
+baseline_datasets = list(struc_merged_no_intensity,func_merged,dti_merged)
+baseline_datasets_test = list(struc_merged_no_intensity_test,func_merged_test,dti_merged_test)
+names(baseline_datasets) = c("Structural","Functional","DTI")
+names(baseline_datasets_test) = c("Structural","Functional","DTI")
+
+
+```
+
+```{r evening out data}
+#evening out datasets 
+for (i in 1:length(baseline_datasets)){
+baseline_datasets[[i]] = semi_join(baseline_datasets[[i]],baseline_datasets[[1]], by = "ID")
+baseline_datasets[[i]] = semi_join(baseline_datasets[[i]],baseline_datasets[[2]], by = "ID")
+baseline_datasets[[i]] = semi_join(baseline_datasets[[i]],baseline_datasets[[3]], by = "ID")
+
+baseline_datasets_test[[i]] = semi_join(baseline_datasets_test[[i]],baseline_datasets_test[[1]], by = "ID")
+baseline_datasets_test[[i]] = semi_join(baseline_datasets_test[[i]],baseline_datasets_test[[2]], by = "ID")
+baseline_datasets_test[[i]] = semi_join(baseline_datasets_test[[i]],baseline_datasets_test[[3]], by = "ID")
+  
+}
+colnames(baseline_datasets[[2]])[18] = "fmotion"
+colnames(baseline_datasets[[3]])[18] = "dmotion"
+colnames(baseline_datasets_test[[2]])[18] = "fmotion"
+colnames(baseline_datasets_test[[3]])[18] = "dmotion"
+
+# saving full samples for LME models
+full_sample = list()
+for (i in 1:length(baseline_datasets)){
+full_sample[[i]] = rbind(baseline_datasets[[i]], baseline_datasets_test[[i]])
+}
+
+demo_names = c("ID","eventname","race", "sex", "income", "coi", "adi", "age", "site", 
+               "fam", "CBCL_Attention", "CBCL_Externalizing", "CBCL_Internalizing", 
+               "IQ", "scanner", "adi_cat", "coi_cat", "race", "sex", "income", 
+               "coi", "adi", "age", "site", "fam", "CBCL_Attention", "CBCL_Externalizing",
+               "CBCL_Internalizing", "IQ", "scanner", "adi_cat", "coi_cat")
+full_sample[[4]] = cbind(full_sample[[1]],full_sample[[2]] %>% dplyr::select(-demo_names)) %>% cbind(full_sample[[3]] %>% dplyr::select(-demo_names))
+
+
+
+
+
+#mutlimodal joining 
+
+baseline_datasets[["Multimodal"]] = cbind(baseline_datasets[[1]],
+                         baseline_datasets[[2]][,names(dplyr::select(baseline_datasets[[2]], dplyr::contains("mri"),fmotion))],
+                         baseline_datasets[[3]][,names(dplyr::select(baseline_datasets[[3]], dplyr::contains("mri"),dmotion))])
+
+baseline_datasets_test[["Multimodal"]] <- cbind(
+  baseline_datasets_test[[1]],
+  baseline_datasets_test[[2]][, names(dplyr::select(baseline_datasets_test[[2]], dplyr::contains("mri"),fmotion))],
+  baseline_datasets_test[[3]][, names(dplyr::select(baseline_datasets_test[[3]], dplyr::contains("mri"),dmotion))]
+)
+```
+
+```{r naming}
+reformat_variable_names <- function(names) {
+  # Define mappings for regions and metrics (sMRI)
+  region_mapping <- list(
+    bankssts = "Banks of the Superior Temporal Sulcus", cdacate = "Caudal Anterior Cingulate", 
+    cdmdfr = "Caudal Middle Frontal", cuneus = "Cuneus", ehinal = "Entorhinal", 
+    fusiform = "Fusiform", ifpl = "Inferior Parietal", iftm = "Inferior Temporal", 
+    ihcate = "Isthmus of Cingulate", locc = "Lateral Occipital", lobfr = "Lateral Orbitofrontal", 
+    lingual = "Lingual", mobfr = "Medial Orbitofrontal", mdtm = "Middle Temporal", 
+    parahpal = "Parahippocampal", paracn = "Paracentral", parsopc = "Pars Opercularis", 
+    parsobis = "Pars Orbitalis", parstgris = "Pars Triangularis", pericc = "Pericalcarine", 
+    postcn = "Postcentral", ptcate = "Posterior Cingulate", precn = "Precentral", 
+    pcl = "Precuneus", rracate = "Rostral Anterior Cingulate", rrmdfr = "Rostral Middle Frontal", 
+    sufr = "Superior Frontal", supl = "Superior Parietal", sutm = "Superior Temporal", 
+    sm = "Supramarginal", frpole = "Frontal Pole", tmpole = "Temporal Pole", 
+    trvtm = "Transverse Temporal", insula = "Insula", 
+    pc = "Precuneus", 
+    mean = "Whole Brain", 
+    total = "Whole Brain",
+    pc = "Precuneus",ptoltm = "Posterolateral Temporal",aomtm = "Anteromedial Temporal",dlprefr = "Dorsolateral Perfrontal",cn = "Central", occ = "Occipital",obfr = "Orbitofrontal", dmfr = "Dorsomedial Frontal"
+  )
+  
+  cluster_mapping = list(cf12 = "12C",cf2 = "2C",cf4 = "4C")
+  
+  metric_mapping <- list(
+    area = "Area", vol = "Volume", thick = "Thickness", sulc = "Sulcal Depth",
+    t1wgray02 = "T1 Gray", t1ww02 = "T1 White", t1wcnt = "T1 Contrast",
+    dtimd = "Diff.", dtimdgm = "Diff.",
+    dtifa = "FA", dtifagm = "FA",
+    dtivol = "Fiber TV."
+    
+  )
+  
+  dti_descriptions <- list(
+    meanlh = "Left Hemisphere",
+    meanrh = "Right Hemisphere",
+     mean = "Whole Brain",
+    fxrh = "Right Fornix", fxlh = "Left Fornix",
+    cgcrh = "Right Cingulate Cingulum", cgclh = "Left Cingulate Cingulum",
+    cghrh = "Right Parahippocampal Cingulum", cghlh = "Left Parahippocampal Cingulum",
+    cstrh = "Right Corticospinal/Pyramidal", cstlh = "Left Corticospinal/Pyramidal",
+    atrrh = "Right Anterior Thalamic Radiations", atrlh = "Left Anterior Thalamic Radiations",
+    uncrh = "Right Uncinate", unclh = "Left Uncinate",
+    ilfrh = "Right Inf. Long. Fasc.", ilflh = "Left Inf. Long. Fasc.",
+    iforh = "Right Inf.-fronto-occipital Fasiculus", ifolh = "Left Inf.-fronto-occipital Fasc.",
+    fmaj = "Forceps Major", fmin = "Forceps Minor",
+    cc = "Corpus Callosum",
+    slfrh = "Right Sup. Long. Fasc.", slflh = "Left Sup. Long. Fasc.",
+    tslfrh = "Right Temporal Sup. Long. Fasc.", tslflh = "Left Temporal Sup. Long. Fasc.",
+    pslfrh = "Right Parietal Sup. Long. Fasc.", pslflh = "Left Parietal Sup. Long. Fasc.",
+    scsrh = "Right Sup. Corticostriate", scslh = "Left Sup. Corticostriate",
+    fscsrh = "Right Sup. Corticostriate-Frontal", fscslh = "Left Sup. Corticostriate-Frontal",
+    pscsrh = "Right Sup. Corticostriate-Parietal", pscslh = "Left Sup. Corticostriate-Parietal",
+    sifcrh = "Right Striatal Inferior Frontal", sifclh = "Left Striatal Inferior Frontal",
+    ifsfcrh = "Right Inf. Frontal Superior Frontal", ifsfclh = "Left Inf. Frontal Sup.Frontal",
+    fxcutrh = "Right Fornix (Excluding Fimbria)", fxcutlh = "Left Fornix (Excluding Fimbria)",
+    allfibrh = "Right Hemisphere Fibers", allfiblh = "Left Hemisphere Fibers",
+    allfibers = "All Fibers",
+    crwmlh = "Left Cerebral White Matter", crwmrh = "Right Cerebral White Matter",
+    lvtlh = "Left Lateral Ventricle", lvtrh = "Right Lateral Ventricle",
+    inflatventlh = "Left Inf. Lateral Ventricle", inflatventrh = "Right Inf. Lateral Ventricle",
+    cblwmlh = "Left Cerebellum White Matter", cblwmrh = "Right Cerebellum White Matter",
+    cblcortexlh = "Left Cerebellum Cortex", cblcortexrh = "Right Cerebellum Cortex",
+    thplh = "Left Thalamus Proper", thprh = "Right Thalamus Proper",
+    caudatelh = "Left Caudate", caudaterh = "Right Caudate",
+    putamenlh = "Left Putamen", putamenrh = "Right Putamen",
+    pdlh = "Left Pallidum", pdrh = "Right Pallidum",
+    brainstem = "Brain Stem", csf = "Cerebrospinal Fluid",
+    hpuslh = "Left Hippocampus", hpusrh = "Right Hippocampus",
+    amygdalalh = "Left Amygdala", amygdalarh = "Right Amygdala",
+    accarealh = "Left Accumbens Area", accarearh = "Right Accumbens Area",
+    ventraldclh = "Left Ventral DC", ventraldcrh = "Right Ventral DC",
+    `3rdvt` = "3rd Ventricle", `4thvt` = "4th Ventricle",
+    banksstsrh = "rh-Banks of the Superior Temporal Sulcus", banksstslh = "lh-Banks of the Superior Temporal Sulcus",
+    cdacaterh = "rh-Caudal Anterior Cingulate", cdacatelh = "lh-Caudal Anterior Cingulate",
+    cdmdfrrh = "rh-Caudal Middle Frontal", cdmdfrlh = "lh-Caudal Middle Frontal",
+    cuneusrh = "rh-Cuneus", cuneuslh = "lh-Cuneus",
+    ehinalrh = "rh-Entorhinal", ehinallh = "lh-Entorhinal",
+    fusiformrh = "rh-Fusiform", fusiformlh = "lh-Fusiform",
+    ifpalrh = "rh-Inferior Parietal", ifpallh = "lh-Inferior Parietal",
+    iftprh = "rh-Inferior Temporal", iftplh = "lh-Inferior Temporal",
+    ihcnterh = "rh-Isthmus of Cingulate", ihcntelh = "lh-Isthmus of Cingulate",
+    locrh = "rh-Lateral Occipital", loclh = "lh-Lateral Occipital",
+    lobfrrh = "rh-Lateral Orbitofrontal", lobfrlh = "lh-Lateral Orbitofrontal",
+    lingualrh = "rh-Lingual", linguallh = "lh-Lingual",
+    mlobfrrh = "rh-Medial Orbitofrontal", mlobfrlh = "lh-Medial Orbitofrontal",
+    mdtmrh = "rh-Middle Temporal", mdtmlh = "lh-Middle Temporal",
+    parahprh = "rh-Parahippocampal", parahplh = "lh-Parahippocampal",
+    pctrh = "rh-Paracentral", pctlh = "lh-Paracentral",
+    parsopcrh = "rh-Pars Opercularis", parsopclh = "lh-Pars Opercularis",
+    parsobrh = "rh-Pars Orbitalis", parsoblh = "lh-Pars Orbitalis",
+    parstangrh = "rh-Pars Triangularis", parstanglh = "lh-Pars Triangularis",
+    periccrh = "rh-Pericalcarine", pericclh = "lh-Pericalcarine",
+    postrh = "rh-Postcentral", postlh = "lh-Postcentral",
+    ptcaterh = "rh-Posterior Cingulate", ptcatelh = "lh-Posterior Cingulate",
+    precnrh = "rh-Precentral", precnlh = "lh-Precentral",
+    pclrh = "rh-Precuneus", pcllh = "lh-Precuneus",
+    rracaterh = "rh-Rostral Anterior Cingulate", rracatelh = "lh-Rostral Anterior Cingulate",
+    rrmdfrrh = "rh-Rostral Middle Frontal", rrmdfrlh = "lh-Rostral Middle Frontal",
+    spfrrh = "rh-Superior Frontal", spfrlh = "lh-Superior Frontal",
+    sppalrh = "rh-Superior Parietal", sppallh = "lh-Superior Parietal",
+    sutmrh = "rh-Superior Temporal", sutmlh = "lh-Superior Temporal",
+    samgrh = "rh-Supramarginal", samglh = "lh-Supramarginal",
+    frpolerh = "rh-Frontal Pole", frpolelh = "lh-Frontal Pole",
+    tppolerh = "rh-Temporal Pole", tppolelh = "lh-Temporal Pole",
+    trvtprh = "rh-Transverse Temporal", trvtplh = "lh-Transverse Temporal",
+    insularh = "rh-Insula", insulalh = "lh-Insula",
+    allfccrh = "Right Hemisphere Fibers ex. CC",
+    allfcclh = "Left Hemisphere Fibers ex. CC",
+    mtprh = "rh-Middle Temporal", mtplh = "lh-Middle Temporal",
+    pscntelh = "lh-Posterior Cingulate",
+    sppalh = "lh-Superior Parietal",
+    sptplh = "lh-Superior Temporal",
+    rsmfrrlh = "lh-Rostral Middle Frontal",
+     rsmfrrh = "rh-Rostral Middle Frontal",
+    sptprh = "rh-Superior Temporal",
+    psrh = "rh-Precuneus",
+    pslh = "lh-Precuneus"
+  )
+  
+  # Define mappings for networks (RSfMRI)
+  network_mapping <- list(
+    ad = "Auditory", cgc = "Cingulo-Opercular", ca = "Cingulo-Parietal",
+    dt = "Default", dla = "Dorsal Attention", fo = "Fronto-Parietal",
+    n = "None", rspltp = "Retrosplenial", sa = "Salience",
+    smh = "Sensorimotor Hand", smm = "Sensorimotor Mouth", vta = "Ventral Attention",
+    vs = "Visual"
+  )
+  
+  # Reformat names
+  formatted_names <- sapply(names, function(name) {
+    if (grepl("rsfmri", name)) {
+      # Process RSfMRI names
+      parts <- strsplit(name, "_")[[1]]
+      from_region <- network_mapping[[parts[4]]]
+      to_region <- network_mapping[[parts[6]]]
+      
+      # Handle cases where regions might be undefined
+      if (is.null(from_region)) from_region <- parts[4]
+      if (is.null(to_region)) to_region <- parts[6]
+      # Format name
+      return(paste0(from_region, " to ", to_region))
+    } 
+    else if (grepl("dmri", name)) {
+      # Process DTI names
+      parts <- strsplit(name, "_")[[1]]
+      metric <- metric_mapping[[parts[2]]] # Map metric
+      description <- dti_descriptions[[parts[4]]] # Map DTI description
+      
+      # Handle cases where descriptions might be undefined
+      if (is.null(description)) description <- parts[4]
+      
+      # Format name
+      return(paste0(description, " (", metric, ")"))
+    } 
+    else if(grepl("cf",name)){
+        parts <- strsplit(name, "_")[[1]]
+        metric <- metric_mapping[[parts[2]]] # Map metric
+        cluster = cluster_mapping[[parts[3]]]
+        region <- gsub("lh|rh$", "", parts[4]) # Extract region without hemisphere
+        hemisphere <- ifelse(grepl("lh$", parts[4]), "lh", ifelse(grepl("rh$", parts[4]), "rh", "")) # Determine hemisphere
+        region <- region_mapping[[region]] # Map region
+        
+        # Format name
+        if (!is.null(region) && hemisphere != "") {
+          return(paste0(hemisphere, "-", region, " (", metric,",",cluster,")"))
+        } else if (!is.null(region)) {
+          return(paste0(region, " (", metric,",",cluster, ")"))
+        } else {
+          return(name) # Default fallback if mapping is not found
+        }
+      
+    }
+    else if(grepl("cdk",name)) {
+      # Process sMRI names
+      parts <- strsplit(name, "_")[[1]]
+      metric <- metric_mapping[[parts[2]]] # Map metric
+      region <- gsub("lh|rh$", "", parts[4]) # Extract region without hemisphere
+      hemisphere <- ifelse(grepl("lh$", parts[4]), "lh", ifelse(grepl("rh$", parts[4]), "rh", "")) # Determine hemisphere
+      region <- region_mapping[[region]] # Map region
+      
+      # Format name
+      if (!is.null(region) && hemisphere != "") {
+        return(paste0(hemisphere, "-", region, " (", metric, ")"))
+      } else if (!is.null(region)) {
+        return(paste0(region, " (", metric, ")"))
+      } else {
+        return(name) # Default fallback if mapping is not found
+      }
+    }else{
+      return(name)
+    }
+  })
+  
+  return(formatted_names)
+}
+
+
+
+
+
+for(i in 1:length(baseline_datasets)){
+
+colnames(baseline_datasets[[i]]) = reformat_variable_names(colnames(baseline_datasets[[i]]))
+colnames(baseline_datasets_test[[i]]) = reformat_variable_names(colnames(baseline_datasets_test[[i]]))
+
+
+}
+for(i in 1:length(full_sample)){
+
+colnames(full_sample[[i]]) = reformat_variable_names(colnames(full_sample[[i]]))
+
+
+}
+
+for(i in c(1,4)){
+colnames(baseline_datasets[[i]]) = gsub("lh-Whole Brain","Left Hemisphere",colnames(baseline_datasets[[i]]))
+colnames(baseline_datasets[[i]]) = gsub("rh-Whole Brain","Right Hemisphere",colnames(baseline_datasets[[i]]))
+colnames(baseline_datasets_test[[i]]) = gsub("lh-Whole Brain","Left Hemisphere",colnames(baseline_datasets_test[[i]]))
+colnames(baseline_datasets_test[[i]]) = gsub("rh-Whole Brain","Right Hemisphere",colnames(baseline_datasets_test[[i]]))
+colnames(full_sample[[i]]) = gsub("lh-Whole Brain","Left Hemisphere",colnames(full_sample[[i]]))
+colnames(full_sample[[i]]) = gsub("rh-Whole Brain","Right Hemisphere",colnames(full_sample[[i]]))
+
+
+colnames(baseline_datasets[[i]]) = gsub("smri_vol_scs_intracranialv","Intracranial Volume",colnames(baseline_datasets[[i]]))
+colnames(baseline_datasets_test[[i]]) = gsub("smri_vol_scs_intracranialv","Intracranial Volume",colnames(baseline_datasets_test[[i]]))
+colnames(full_sample[[i]]) = gsub("smri_vol_scs_intracranialv","Intracranial Volume",colnames(full_sample[[i]]))
+
+
+}
+
+
+```
+
+```{r sex-specific data conditioning}
+# Initialize counters and lists for male and female datasets
+a <- 0
+Maledatasets <- list()
+Femaledatasets <- list()
+
+# Loop through each dataset and split into male and female
+for (i in baseline_datasets) {
+  a <- a + 1
+  Maledatasets[[a]] <- as_tibble(subset(i, sex == "Male"))
+  Femaledatasets[[a]] <- as_tibble(subset(i, sex == "Female"))
+}
+
+
+# Initialize counters and lists for male and female datasets
+a <- 0
+Maledatasets_test <- list()
+Femaledatasets_test <- list()
+
+# Loop through each dataset and split into male and female
+for (i in baseline_datasets_test) {
+  a <- a + 1
+  Maledatasets_test[[a]] <- as_tibble(subset(i, sex == "Male"))
+  Femaledatasets_test[[a]] <- as_tibble(subset(i, sex == "Female"))
+}
+
+
+```
+
+```{r brain adjustment function}
+adjust_indices = c(
+grep("^All Fibers \\(FA\\)$", colnames(baseline_datasets[[3]])),ncol(baseline_datasets[[3]]),
+grep("Auditory to Auditory", colnames(baseline_datasets[[2]])),ncol(baseline_datasets[[2]]))
+
+
+DTI_names = colnames(baseline_datasets[[3]])[adjust_indices[1]:adjust_indices[2]]
+Func_names = colnames(baseline_datasets[[2]])[adjust_indices[3]:adjust_indices[4]]
+DTI_names_adjusted = make.names(colnames(baseline_datasets[[3]]))[adjust_indices[1]:adjust_indices[2]]
+Func_names_adjusted = make.names(colnames(baseline_datasets[[2]]))[adjust_indices[3]:adjust_indices[4]]
+
+
+brain_metric_adjustment= function(data, testdata){
+
+  if("fmotion" %in% colnames(data) && "dmotion" %in% colnames(data)){
+    a <- data
+    names(a) = make.names(names(a))
+    if("dmotion" %in% colnames(data)){
+      columns_to_adjust_d <- DTI_names_adjusted
+      
+      columns_used_d <- names(dplyr::select(data,dmotion))
+      
+      a <- adjust(a, effect = columns_used_d, select = columns_to_adjust_d)
+      
+      data[,DTI_names] <- a[,columns_to_adjust_d]
+    }
+    
+    if("fmotion" %in% colnames(data)){
+      columns_to_adjust_f <- Func_names_adjusted
+      
+      columns_used_f <- names(dplyr::select(data,fmotion))
+      
+      a <- adjust(a, effect = columns_used_f, select = columns_to_adjust_f)
+      
+      data[,Func_names] <- a[, columns_to_adjust_f]
+      
+    }
+    
+   
+    print("Multimodal identified and adjusted")
+    
+    
+  }
+  
+  else if ("fmotion" %in% colnames(data)) {
+    a <- data
+    names(a) = make.names(names(a))
+    columns_to_adjust <- names(a)[adjust_indices[3]:adjust_indices[4]]
+    columns_used <- names(dplyr::select(data, fmotion))
+    a <- adjust(a, effect = columns_used, select = columns_to_adjust)
+    
+    data[,Func_names] <- a[, columns_to_adjust]
+    
+    print("Functional identified and adjusted")
+  }
+  
+  else if ("dmotion" %in% colnames(data)) {
+    a <- data
+    names(a) = make.names(names(a))
+    columns_to_adjust <- names(a)[adjust_indices[1]:adjust_indices[2]]
+    columns_used <- names(dplyr::select(data, dmotion))
+    a <- adjust(a, effect = columns_used, select = columns_to_adjust)
+    data[,DTI_names] <- a[,columns_to_adjust]
+    
+    print("DTI identified and adjusted")
+  } 
+  
+  else {
+    print("Structural identified and not adjusted")
+  }
+  
+  
+  if("fmotion" %in% colnames(testdata) && "dmotion" %in% colnames(testdata)){
+    a <- testdata
+    names(a) = make.names(names(a))
+    if("dmotion" %in% colnames(testdata)){
+      columns_to_adjust_d <- DTI_names_adjusted
+      
+      columns_used_d <- names(dplyr::select(data,dmotion))
+      
+      a <- adjust(a, effect = columns_used_d, select = columns_to_adjust_d)
+      
+      testdata[,DTI_names] <- a[, columns_to_adjust_d]
+    }
+    
+    if("fmotion" %in% colnames(data)){
+      columns_to_adjust_f <-  Func_names_adjusted
+      
+      columns_used_f <- names(dplyr::select(data, fmotion))
+      
+      a <- adjust(a, effect = columns_used_f, select = columns_to_adjust_f)
+      
+      testdata[,Func_names] <- a[, columns_to_adjust_f]
+      
+    }
+    
+    
+    print("Multimodal identified and adjusted")
+    
+    
+  }
+  
+  else if ("fmotion" %in% colnames(testdata)) {
+    a <- testdata
+    names(a) = make.names(names(a))
+    columns_to_adjust <- names(a)[adjust_indices[3]:adjust_indices[4]]
+    columns_used <- names(dplyr::select(data, fmotion))
+    a <- adjust(a, effect = columns_used, select = columns_to_adjust)
+    
+    testdata[,Func_names] <- a[, columns_to_adjust]
+    
+    print("Functional identified and adjusted")
+  }
+  
+  else if ("dmotion" %in% colnames(data)) {
+    a <- testdata
+    names(a) = make.names(names(a))
+    columns_to_adjust <- names(a)[adjust_indices[1]:adjust_indices[2]]
+    columns_used <- names(dplyr::select(testdata, dmotion))
+    a <- adjust(a, effect = columns_used, select = columns_to_adjust)
+    testdata[,DTI_names] <- a[,columns_to_adjust]
+    
+    print("DTI identified and adjusted")
+  } 
+  
+  else {
+    print("Structural identified and not adjusted")
+  }
+  
+  
+  
+  return(list(data,testdata))
+  
+}
+
+
+```
+
+# Analysis Functions
+
+### ELN
+
+```{r,eln cat function}
+
+eln_fun_cat <- function(data, outcomevar, repeats) {
+ 
+  colnames(data)[which(colnames(data) == outcomevar)] <- "outcome"
+  folds = createFolds(data$fam, k = 10)
+  
+  # Remove unnecessary columns
+   data <- data[, !grepl("CBCL", colnames(data))]
+  data <- data %>% dplyr::select(!dplyr::contains("ID")&!dplyr::contains("eventname"))
+  data <- data %>% dplyr::select(-all_of("fam"))
+  
+  
+  # Train elastic net model using caret
+ model <- train(
+    outcome ~ ., 
+    data = data, 
+    method = "glmnet", 
+    preProcess = c("center", "scale"),  
+    trControl = trainControl(
+      method = "cv",
+      number = 10,
+      #repeats = repeats,
+      classProbs = TRUE,
+      indexOut  = folds,
+      allowParallel = TRUE,
+      summaryFunction = multiClassSummary
+    ),
+    tuneLength = 5  # Number of parameter combinations to try
+  )
+  
+  
+  return(model)
+}
+
+
+
+```
+```{r ELN brain income only pipeline}
+income_eln = function(low_start,low_end,
+                      mid_start,mid_end,
+                      high_start,high_end,data,testdata,numclass){
+  
+  if(numclass == 2){
+data$income = if_else(data$income %in% c(low_start:low_end),"Low.Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(data$income %in% c(high_start:high_end),"Mid.High.Income",
+                              if_else(data$income == 999,NA,NA)))
+
+data$income = ordered(data$income,levels = c("Mid.High.Income","Low.Income"))
+
+testdata$income = if_else(testdata$income %in% c(low_start:low_end),"Low.Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(testdata$income %in% c(high_start:high_end),"Mid.High.Income",
+                              if_else(testdata$income == 999,NA,NA)))
+
+testdata$income = ordered(testdata$income,levels = c("Mid.High.Income","Low.Income"))
+
+brain_adjustment_data = brain_metric_adjustment(data,testdata)
+data = brain_adjustment_data[[1]]
+testdata =  brain_adjustment_data[[2]]
+
+data = na.omit(data)
+testdata = na.omit(testdata)
+print(table(data$income))
+print(table(testdata$income))
+
+data = data %>% dplyr::select(!dplyr::any_of(c("age","race","sex","eventname",
+                                             "scanner","ID","site", 
+                                             "CBCL_Attention","CBCL_Externalizing","CBCL_Internalizing",
+                                            "CBCL_Total", "adi","adi_cat","coi","coi_cat",
+                                             "IQ","dmotion","fmotion")))
+
+mod = eln_fun_cat(data,"income",1) 
+
+
+# Predictions: Get both class predictions and probabilities
+predicted <- predict(mod, testdata) # Class predictions
+predicted_probs <- predict(mod, testdata, type = "prob") # Probabilities for classes
+
+# Initialize Results list
+Results <- list()
+
+# Test Accuracy (using class predictions)
+Results[["testAcc"]] <- postResample(pred = predicted, obs = testdata$income)
+print(paste("Test Accuracy:", Results[["testAcc"]]["Accuracy"]))
+Results[["train_acc"]] =  mean(mod[["resample"]][["Accuracy"]])
+print(paste("Train Acc:",Results[["train_acc"]]))
+# Check if it's a binary or multiclass classification
+if (length(unique(data$income)) == 2) {
+  # Binary classification
+  dat <- data.frame(
+    obs = factor(testdata$income, levels = c("Mid.High.Income","Low.Income")), # Observed values
+    pred = factor(predicted, levels = c("Mid.High.Income","Low.Income")),     # Predicted classes
+    Mid.High.Income = predicted_probs[, "Mid.High.Income"],                   # Probabilities for positive class
+    Low.Income = predicted_probs[, "Low.Income"]                              # Probabilities for negative class
+  )
+
+  # Calculate AUC using twoClassSummary
+  auc_results <- twoClassSummary(dat, lev = c("Mid.High.Income","Low.Income"))
+  Results[["AUC"]] <- auc_results[["ROC"]]
+
+  print(paste("Area under the curve (AUC):", Results[["AUC"]]))
+} else if (length(unique(data$income)) > 2) {
+  # Multiclass classification
+  dat <- data.frame(
+    obs = factor(testdata$income, levels = colnames(predicted_probs)), # Observed values
+    pred = factor(predicted, levels = colnames(predicted_probs)),      # Predicted classes
+    predicted_probs                                                    # Add all class probabilities
+  )
+
+  # Calculate metrics using multiClassSummary
+  multiclass_results <- multiClassSummary(dat, lev = colnames(predicted_probs))
+  Results[["AUC"]] <- multiclass_results[["AUC"]]
+
+  print(paste("Multiclass AUC:", Results[["AUC"]]))
+}
+
+Results[["Confusionmat_test"]] = confusionMatrix(testdata$income,predicted)
+#print(paste("Test Accuracy:",Results[["Confusionmat_test"]][["overall"]][["Accuracy"]]))
+
+
+Results[["train_auc"]] =  mean(mod[["resample"]][["AUC"]])
+
+
+print(paste("Train AUC:",Results[["train_auc"]]))
+
+  }
+  else if (numclass > 2){
+data$income = if_else(data$income %in% c(low_start:low_end),"Low.Income",
+                      if_else(data$income %in% c(mid_start:mid_end),"Mid.Income",
+                     # if_else(data$income %in% c(9),"Upper-Mid Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(data$income %in% c(high_start:high_end),"High.Income",
+                              if_else(data$income == 999,NA,NA))))
+
+data$income = ordered(data$income, levels = c("High.Income","Mid.Income","Low.Income"))
+
+testdata$income = if_else(testdata$income %in% c(low_start:low_end),"Low.Income",
+                      if_else(testdata$income %in% c(mid_start:mid_end),"Mid.Income",
+                     # if_else(testdata$income %in% c(9),"Upper-Mid Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(testdata$income %in% c(high_start:high_end),"High.Income",
+                              if_else(testdata$income == 999,NA,NA))))
+
+testdata$income = ordered(testdata$income, levels = c("High.Income","Mid.Income","Low.Income"))
+
+brain_adjustment_data = brain_metric_adjustment(data,testdata)
+data = brain_adjustment_data[[1]]
+testdata =  brain_adjustment_data[[2]]
+testdata = na.omit(testdata)
+data = na.omit(data)
+print(table(data$income))
+print(table(testdata$income))
+
+data = data %>% dplyr::select(!dplyr::any_of(c("age","race","sex","eventname",
+                                             "scanner","ID","site", "adi","adi_cat",
+                                            "CBCL_Attention","CBCL_Externalizing","CBCL_Internalizing",
+                                             "IQ","dmotion","fmotion")))
+
+mod = eln_fun_cat(data,"income",1) 
+
+
+# Predictions: Get both class predictions and probabilities
+predicted <- predict(mod, testdata) # Class predictions
+predicted_probs <- predict(mod, testdata, type = "prob") # Probabilities for classes
+
+# Initialize Results list
+Results <- list()
+
+# Test Accuracy (using class predictions)
+Results[["testAcc"]] <- postResample(pred = predicted, obs = testdata$income)
+print(paste("Test Accuracy:", Results[["testAcc"]]["Accuracy"]))
+Results[["train_acc"]] =  mean(mod[["resample"]][["Accuracy"]])
+print(paste("Train Acc:",Results[["train_acc"]]))
+
+# Check if it's a binary or multiclass classification
+if (length(unique(data$income)) == 2) {
+  # Binary classification
+  dat <- data.frame(
+    obs = factor(testdata$income, levels = c("Mid.High.Income", "Low.Income")), # Observed values
+    pred = factor(predicted, levels = c("Mid.High.Income", "Low.Income")),     # Predicted classes
+    Mid.High.Income = predicted_probs[, "Mid.High.Income"],                   # Probabilities for positive class
+    Low.Income = predicted_probs[, "Low.Income"]                              # Probabilities for negative class
+  )
+
+  # Calculate AUC using twoClassSummary
+  auc_results <- twoClassSummary(dat, lev = c("Mid.High.Income", "Low.Income"))
+  Results[["AUC"]] <- auc_results[["ROC"]]
+
+  print(paste("Area under the curve (AUC):", Results[["AUC"]]))
+} else if (length(unique(data$income)) > 2) {
+  # Multiclass classification
+  dat <- data.frame(
+    obs = factor(testdata$income, levels = colnames(predicted_probs)), # Observed values
+    pred = factor(predicted, levels = colnames(predicted_probs)),      # Predicted classes
+    predicted_probs                                                    # Add all class probabilities
+  )
+
+  # Calculate metrics using multiClassSummary
+  multiclass_results <- multiClassSummary(dat, lev = colnames(predicted_probs))
+  Results[["AUC"]] <- multiclass_results[["AUC"]]
+
+ print(paste("Multiclass AUC:", Results[["AUC"]]))
+}
+
+Results[["Confusionmat_test"]] = confusionMatrix(testdata$income,predicted)
+#print(paste("Test Accuracy:",Results[["Confusionmat_test"]][["overall"]][["Accuracy"]]))
+
+
+Results[["train_auc"]] =  mean(mod[["resample"]][["AUC"]])
+
+print(paste("Train AUC:",Results[["train_auc"]]))
+}
+return(list("eln" = mod,"Imp_Var" = varImp(mod),"Results" = Results))
+  
+}
+
+
+
+```
+```{r ELN income Demographic pipeline}
+income_eln_demo = function(low_start,low_end,
+                      mid_start,mid_end,
+                      high_start,high_end,data,testdata,numclass){
+  
+  if(numclass == 2){
+data$income = if_else(data$income %in% c(low_start:low_end),"Low.Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(data$income %in% c(high_start:high_end),"Mid.High.Income",
+                              if_else(data$income == 999,NA,NA)))
+
+data$income = ordered(data$income,levels = c("Mid.High.Income","Low.Income"))
+
+testdata$income = if_else(testdata$income %in% c(low_start:low_end),"Low.Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(testdata$income %in% c(high_start:high_end),"Mid.High.Income",
+                              if_else(testdata$income == 999,NA,NA)))
+
+testdata$income = ordered(testdata$income,levels = c("Mid.High.Income","Low.Income"))
+
+brain_adjustment_data = brain_metric_adjustment(data,testdata)
+data = brain_adjustment_data[[1]]
+testdata =  brain_adjustment_data[[2]]
+testdata = na.omit(testdata)
+data = na.omit(data)
+print(table(data$income))
+print(table(testdata$income))
+
+
+data = data %>% dplyr::select(-any_of(c("scanner","dmotion","fmotion","site","adi","adi_cat","coi","coi_cat")))
+mod = eln_fun_cat(data,"income",1) 
+
+
+
+
+# Predictions: Get both class predictions and probabilities
+predicted <- predict(mod, testdata) # Class predictions
+predicted_probs <- predict(mod, testdata, type = "prob") # Probabilities for classes
+
+# Initialize Results list
+Results <- list()
+
+# Test Accuracy (using class predictions)
+Results[["testAcc"]] <- postResample(pred = predicted, obs = testdata$income)
+print(paste("Test Accuracy:", Results[["testAcc"]]["Accuracy"]))
+Results[["train_acc"]] =  mean(mod[["resample"]][["Accuracy"]])
+print(paste("Train Acc:",Results[["train_acc"]]))
+
+# Check if it's a binary or multiclass classification
+if (length(unique(data$income)) == 2) {
+  # Binary classification
+  dat <- data.frame(
+    obs = factor(testdata$income, levels = c("Mid.High.Income", "Low.Income")), # Observed values
+    pred = factor(predicted, levels = c("Mid.High.Income", "Low.Income")),     # Predicted classes
+    Mid.High.Income = predicted_probs[, "Mid.High.Income"],                   # Probabilities for positive class
+    Low.Income = predicted_probs[, "Low.Income"]                              # Probabilities for negative class
+  )
+
+  # Calculate AUC using twoClassSummary
+  auc_results <- twoClassSummary(dat, lev = c("Mid.High.Income", "Low.Income"))
+  Results[["AUC"]] <- auc_results[["ROC"]]
+
+  print(paste("Area under the curve (AUC):", Results[["AUC"]]))
+} 
+
+else if (length(unique(data$income)) > 2) {
+  # Multiclass classification
+  dat <- data.frame(
+    obs = factor(testdata$income, levels = colnames(predicted_probs)), # Observed values
+    pred = factor(predicted, levels = colnames(predicted_probs)),      # Predicted classes
+    predicted_probs                                                    # Add all class probabilities
+  )
+
+  # Calculate metrics using multiClassSummary
+  multiclass_results <- multiClassSummary(dat, lev = colnames(predicted_probs))
+  Results[["AUC"]] <- multiclass_results[["AUC"]]
+
+  print(paste("Multiclass AUC:", Results[["AUC"]]))
+}
+
+
+Results[["Confusionmat_test"]] = confusionMatrix(testdata$income,predicted)
+#print(paste("Test Accuracy:",Results[["Confusionmat_test"]][["overall"]][["Accuracy"]]))
+
+
+Results[["train_auc"]] =  mean(mod[["resample"]][["AUC"]])
+print(paste("Train AUC:",Results[["train_auc"]]))
+
+  }
+    else if (numclass > 2){
+data$income = if_else(data$income %in% c(low_start:low_end),"Low.Income",
+                      if_else(data$income %in% c(mid_start:mid_end),"Mid.Income",
+                     # if_else(data$income %in% c(9),"Upper-Mid Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(data$income %in% c(high_start:high_end),"High.Income",
+                              if_else(data$income == 999,NA,NA))))
+
+data$income = ordered(data$income, levels = c("High.Income","Mid.Income","Low.Income"))
+
+testdata$income = if_else(testdata$income %in% c(low_start:low_end),"Low.Income",
+                      if_else(testdata$income %in% c(mid_start:mid_end),"Mid.Income",
+                     # if_else(testdata$income %in% c(9),"Upper-Mid Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(testdata$income %in% c(high_start:high_end),"High.Income",
+                              if_else(testdata$income == 999,NA,NA))))
+
+testdata$income = ordered(testdata$income, levels = c("High.Income","Mid.Income","Low.Income"))
+
+brain_adjustment_data = brain_metric_adjustment(data,testdata)
+data = brain_adjustment_data[[1]]
+testdata =  brain_adjustment_data[[2]]
+testdata = na.omit(testdata)
+data = na.omit(data)
+print(table(data$income))
+print(table(testdata$income))
+
+data = data %>% dplyr::select(-any_of(c("scanner","dmotion","fmotion","site","adi","adi_cat")))
+mod = eln_fun_cat(data,"income",1) 
+
+
+# Predictions: Get both class predictions and probabilities
+predicted = predict(mod, testdata) # Class predictions
+predicted_probs = predict(mod, testdata, type = "prob") # Probabilities for classes
+
+# Printing Results
+Results = list()
+
+# Test Accuracy (using class predictions)
+Results[["testAcc"]] = postResample(pred = predicted, obs = testdata$income)
+print(paste("Test Accuracy:", Results[["testAcc"]]["Accuracy"]))
+Results[["train_acc"]] =  mean(mod[["resample"]][["Accuracy"]])
+print(paste("Train Acc:",Results[["train_acc"]]))
+
+# Check if it's a binary classification
+
+# Check if it's a binary or multiclass classification
+if (length(unique(data$income)) == 2) {
+  # Binary classification
+  dat <- data.frame(
+    obs = factor(testdata$income, levels = c("Mid.High.Income", "Low.Income")), # Observed values
+    pred = factor(predicted, levels = c("Mid.High.Income", "Low.Income")),     # Predicted classes
+    Mid.High.Income = predicted_probs[, "Mid.High.Income"],                   # Probabilities for positive class
+    Low.Income = predicted_probs[, "Low.Income"]                              # Probabilities for negative class
+  )
+
+  # Calculate AUC using twoClassSummary
+  auc_results <- twoClassSummary(dat, lev = c("Mid.High.Income", "Low.Income"))
+  Results[["AUC"]] <- auc_results[["ROC"]]
+
+  print(paste("Area under the curve (AUC):", Results[["AUC"]]))
+} 
+
+else if (length(unique(data$income)) > 2) {
+  # Multiclass classification
+  dat <- data.frame(
+    obs = factor(testdata$income, levels = colnames(predicted_probs)), # Observed values
+    pred = factor(predicted, levels = colnames(predicted_probs)),      # Predicted classes
+    predicted_probs                                                    # Add all class probabilities
+  )
+
+  # Calculate metrics using multiClassSummary
+  multiclass_results <- multiClassSummary(dat, lev = colnames(predicted_probs))
+  Results[["AUC"]] <- multiclass_results[["AUC"]]
+
+  print(paste("Multiclass AUC:", Results[["AUC"]]))
+}
+
+
+Results[["Confusionmat_test"]] = confusionMatrix(testdata$income,predicted)
+#print(paste("Test Accuracy:",Results[["Confusionmat_test"]][["overall"]][["Accuracy"]]))
+
+
+Results[["train_auc"]] =  mean(mod[["resample"]][["AUC"]])
+
+print(paste("Train AUC:",Results[["train_auc"]]))
+
+}
+return(list("eln" = mod,"Imp_Var" = varImp(mod),"Results" = Results))
+  
+}
+```
+```{r ELN adi brain-only  }
+nh_eln = function(data,testdata,variable){
+
+  
+brain_adjustment_data = brain_metric_adjustment(data,testdata)
+data = brain_adjustment_data[[1]]
+testdata =  brain_adjustment_data[[2]]
+
+data = na.omit(data)
+testdata = na.omit(testdata)
+
+if(variable == "coi_cat"){
+data = data %>% dplyr::select(!dplyr::any_of(c("age","race","sex","eventname",
+                                              "scanner","ID","site",
+                                            "CBCL_Attention","CBCL_Externalizing","CBCL_Internalizing",
+                                            "CBCL_Total", "income",
+                                             "IQ","dmotion","fmotion","adi","coi","adi_cat")))
+
+}
+
+else if(variable == "adi_cat"){
+  data = data %>% dplyr::select(!dplyr::any_of(c("age","race","sex","eventname",
+                                             "scanner","ID","site",
+                                            "CBCL_Attention","CBCL_Externalizing","CBCL_Internalizing",
+                                            "CBCL_Total", "income",
+                                             "IQ","dmotion","fmotion","adi","coi","coi_cat")))
+  
+  
+  
+}
+
+print(table(data[,variable]))
+print(table(testdata[,variable]))
+mod = eln_fun_cat(data,variable,1) 
+
+
+# Predictions: Get both class predictions and probabilities
+predicted <- predict(mod, testdata) # Class predictions
+predicted_probs <- predict(mod, testdata, type = "prob") # Probabilities for classes
+
+# Initialize Results list
+Results <- list()
+
+# Test Accuracy (using class predictions)
+Results[["testAcc"]] <- postResample(pred = predicted, obs = testdata[,variable])
+print(paste("Test Accuracy:", Results[["testAcc"]]["Accuracy"]))
+Results[["train_acc"]] =  mean(mod[["resample"]][["Accuracy"]])
+print(paste("Train Acc:",Results[["train_acc"]]))
+
+  # Binary classification
+  dat <- data.frame(
+    obs = factor(testdata[,variable], levels = c("No", "Yes")), # Observed values
+    pred = factor(predicted, levels = c("No", "Yes")),     # Predicted classes
+    No = predicted_probs[, "No"],                   # Probabilities for positive class
+    Yes = predicted_probs[, "Yes"]                              # Probabilities for negative class
+  )
+
+  auc_results <- multiClassSummary(dat, lev = colnames(predicted_probs))
+  Results[["AUC"]] <- auc_results[["AUC"]]
+
+ print(paste("Area under the curve (AUC):", Results[["AUC"]]))
+
+
+ 
+Results[["Confusionmat_test"]] = confusionMatrix(testdata[,variable],predicted)
+#print(paste("Test Accuracy:",Results[["Confusionmat_test"]][["overall"]][["Accuracy"]]))
+
+
+Results[["train_auc"]] =  mean(mod[["resample"]][["AUC"]])
+
+
+print(paste("Train AUC:",Results[["train_auc"]]))
+  
+  
+return(list("eln" = mod,"Imp_Var" = varImp(mod),"Results" = Results))  
+  
+  
+}
+
+```
+```{r ELN adi demographics}
+nh_eln_demo = function(data,testdata,variable){
+
+  
+brain_adjustment_data = brain_metric_adjustment(data,testdata) 
+data = brain_adjustment_data[[1]] %>% dplyr::select(!any_of(c("income","scanner","fmotion","dmotion","site","adi","coi")))
+testdata =  brain_adjustment_data[[2]] %>% dplyr::select(!any_of(c("income","scanner","fmotion","dmotion","site","adi","coi")))
+if(variable == "coi_cat"){
+data = na.omit(data) %>% dplyr::select(-adi_cat)
+testdata = na.omit(testdata) %>% dplyr::select(-adi_cat)
+}
+
+else if (variable == "adi_cat"){
+  
+data = na.omit(data) %>% dplyr::select(-coi_cat)
+testdata = na.omit(testdata) %>% dplyr::select(-coi_cat)
+  
+}
+print(table(data[,variable]))
+print(table(testdata[,variable]))
+
+
+mod = eln_fun_cat(data,variable,1) 
+
+
+# Predictions: Get both class predictions and probabilities
+predicted <- predict(mod, testdata) # Class predictions
+predicted_probs <- predict(mod, testdata, type = "prob") # Probabilities for classes
+
+# Initialize Results list
+Results <- list()
+
+# Test Accuracy (using class predictions)
+Results[["testAcc"]] <- postResample(pred = predicted, obs = testdata[,variable])
+print(paste("Test Accuracy:", Results[["testAcc"]]["Accuracy"]))
+Results[["train_acc"]] =  mean(mod[["resample"]][["Accuracy"]])
+print(paste("Train Acc:",Results[["train_acc"]]))
+
+  # Binary classification
+  dat <- data.frame(
+    obs = factor(testdata[,variable], levels = c("No", "Yes")), # Observed values
+    pred = factor(predicted, levels = c("No", "Yes")),     # Predicted classes
+    No = predicted_probs[, "No"],                   # Probabilities for positive class
+    Yes = predicted_probs[, "Yes"]                              # Probabilities for negative class
+  )
+
+  auc_results <- multiClassSummary(dat, lev = colnames(predicted_probs))
+  Results[["AUC"]] <- auc_results[["AUC"]]
+
+ print(paste("Area under the curve (AUC):", Results[["AUC"]]))
+
+
+ 
+Results[["Confusionmat_test"]] = confusionMatrix(testdata[,variable],predicted)
+#print(paste("Test Accuracy:",Results[["Confusionmat_test"]][["overall"]][["Accuracy"]]))
+
+
+Results[["train_auc"]] =  mean(mod[["resample"]][["AUC"]])
+
+
+print(paste("Train AUC:",Results[["train_auc"]]))
+  
+  
+return(list("eln" = mod,"Imp_Var" = varImp(mod),"Results" = Results))  
+  
+  
+}
+
+
+```
+### LME
+
+```{r LME}
+log_mod_function = function(neurocognitive,brain_variable){
+d <- read_csv("5.1 Release/Non-Brain/nc_y_nihtb.csv") 
+d = d[,-3]
+d = d %>% filter(grepl("baseline",eventname))
+colnames(d)[1] = "ID"
+d = merge(full_sample[[4]],d,by = c("ID","eventname"))
+
+
+d$income = as.factor(if_else(d$income %in% c(1:7),1,
+                   # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                   if_else(d$income %in% c(8:10),0,
+                           if_else(d$income == 999,NA,NA))))
+d$fam = as.factor(d$fam)
+d$N = d[,neurocognitive]
+d$B = d[,brain_variable]
+summary(lmer(scale(B)~income+scale(N) + 
+                     scale(age)+sex + race + 
+                    (1|scanner),data = d))
+}
+lme_income_function = function(models,modality,measures_list){
+list_of_models = list(c(models[["brain-only"]][[modality]]),
+                      c(models[["demo"]][[modality]]))
+
+
+
+run = 0 
+t = tibble()
+coef = as.matrix(coef(list_of_models[[2]][["eln"]][["finalModel"]]))
+for (i in list_of_models){
+  if("Overall" %in% colnames(i[["Imp_Var"]][["importance"]]) == FALSE){
+    
+    colnames(i[["Imp_Var"]][["importance"]])[1] = "Overall"
+    i[["Imp_Var"]][["importance"]] =  i[["Imp_Var"]][["importance"]] %>% dplyr::select(Overall)
+    
+  }
+  
+  
+  
+  run = run + 1
+  a =cbind(i[["Imp_Var"]][["importance"]]%>% slice_max(Overall,n = 10,with_ties = FALSE) %>% filter(Overall != 0) %>% arrange(desc(Overall)),
+           i[["Imp_Var"]][["importance"]] %>% slice_max(Overall,n = 10,with_ties = FALSE) %>% filter(Overall != 0) %>% row.names())
+  a$Ranking = seq(1:nrow(a))
+  
+  if(run == 1){
+    a$Model = rep("Brain_Only",nrow(a))
+    
+  }
+  
+  if(run == 2){
+    a$Model = rep("Demographics",nrow(a))
+    
+  }
+  t = rbind(t,a)
+  
+}
+row.names(t) = NULL
+colnames(t) = c("Relative Importance","Feature","Ranking","Model")
+#t$Feature <- gsub(".*\\((.*)\\).*", "\\1", t$Feature)
+#t$Model = c(rep("Brain_Only",10),rep("Demographics",10))
+
+
+
+
+t = t %>%
+  filter(str_detect(Feature, "\\b(rh|lh|Right|Left|to|T1|Contrast|FA|Diff|Area|Volume|Thickness|Fiber|Sulcal)\\b"))
+
+
+t$Feature = gsub("left Hemisphere","Left hemisphere",t$Feature)
+t$Feature = gsub("right Hemisphere","Right hemisphere",t$Feature)
+
+
+
+#t$Feature <- gsub("^rh-|^lh-| rh-| lh-|left-|right-", "", t$Feature)
+#t$Feature <- gsub(".*orbitofrontal.*", "orbitofrontal", t$Feature)
+#t$Feature <- gsub(".*cingulate.*", "cingulate", t$Feature)
+#t$Feature <- gsub(".*occipital.*", "occipital", t$Feature)
+t$Feature <- gsub(".*motion.*", "Mean Motion", t$Feature)
+#t$Feature <- gsub("fronto-parietal", "frontoparietal", t$Feature)
+#t$Feature <- gsub("cingulo-parietal", "cinguloparietal", t$Feature)
+#t$Feature <- gsub("cingulo-opercular", "cinguloopercular", t$Feature)
+
+
+
+#t <- t %>% separate_rows(Feature, sep = "-")
+
+
+t$adjusted = case_when(t$Feature %in% semi_join(split(t,t$Model)[[1]],split(t,t$Model)[[length(split(t,t$Model))]], by = c("Feature"))$Feature  ~ "Both",
+                       t$Model == "Demographics" ~ "In. Demographics",
+                       t$Model == "Brain_Only" ~  "Ex. Demographics")
+
+
+
+t = t %>% group_by(Feature) %>% summarise(`Average Ranking` = mean(Ranking),
+                                          `Average Importance` = as.numeric(mean(`Relative Importance`)), 
+                                          `Appearences in Top 10 across Models` = n(),
+                                          Model_Types = first(adjusted))
+
+
+t$Model_Types = ordered(t$Model_Types,c("Ex. Demographics","In. Demographics","Both")) 
+
+t = t %>% filter(Model_Types == "Both")
+t$Feature = gsub("`","",t$Feature)
+row.names(coef) =  gsub("`","",row.names(coef))
+lme_income = list()
+lme_income_table = NULL
+for (measure in measures_list){
+for(feature in c(t$Feature)){
+  lme_income[[measure]][[feature]] = log_mod_function(measure,feature)
+  
+ 
+ row1 = c(feature,
+          coef[feature,ncol(coef)],
+          coef(lme_income[[measure]][[feature]])["scale(N)","Estimate"],
+          exp(coef(lme_income[[measure]][[feature]])["scale(N)","Estimate"]),
+          coef(lme_income[[measure]][[feature]])["scale(N)","Pr(>|t|)"],
+          measure,
+          coef(lme_income[[measure]][[feature]])["income1","Estimate"],
+          exp(coef(lme_income[[measure]][[feature]])["income1","Estimate"]),
+          coef(lme_income[[measure]][[feature]])["income1","Pr(>|t|)"])
+ 
+ lme_income_table = rbind(lme_income_table,row1) 
+ 
+ 
+}
+}
+return(lme_income_table)
+}
+```
+### T-Test
+```{r}
+t_test_neurocog = function(neurocogvariable){
+  t_test_results = list()
+d <- read_csv("5.1 Release/Non-Brain/nc_y_nihtb.csv") %>% dplyr::select("src_subject_id","eventname","nihtbx_totalcomp_agecorrected",neurocogvariable)
+
+d = d[,-3]
+d = d %>% filter(grepl("baseline",eventname))
+colnames(d)[1] = "ID"
+d = merge(full_sample,d,by = c("ID","eventname"))
+
+
+d$income = if_else(d$income %in% c(1:7),0,
+                      # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(d$income %in% c(8:10),1,
+                              if_else(d$income == 999,NA,NA)))
+
+
+
+t_test_results[["2-level"]] = t.test(as_tibble(d %>% filter(income == 1))[,neurocogvariable],as_tibble(d %>% filter(income == 0))[,neurocogvariable])
+
+
+t_test_results[["6-10"]] = NULL
+for (class in c(6, 8, 9, 10)) {
+  d <- read_csv("5.1 Release/Non-Brain/nc_y_nihtb.csv") %>% 
+    dplyr::select("src_subject_id", "eventname", "nihtbx_totalcomp_agecorrected",neurocogvariable)
+  
+  d = d[, -3]
+  d = d %>% filter(grepl("baseline", eventname))
+  colnames(d)[1] = "ID"
+  d = merge(full_sample, d, by = c("ID", "eventname"))
+  
+  if (class == 6) {
+    d$income = if_else(d$income %in% c(1:5), 0,
+                             if_else(d$income %in% c(class, class + 1), 1,
+                                     if_else(d$income == 999, NA, NA)))
+    
+    t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(d %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(d %>% filter(income == 0))[,neurocogvariable])
+  } else {
+    d$income = if_else(d$income %in% c(1:5), 0,
+                             if_else(d$income %in% c(class), 1,
+                                     if_else(d$income == 999, NA, NA)))
+    
+    t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(d %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(d %>% filter(income == 0))[,neurocogvariable])
+  }
+}
+
+
+
+
+
+t_test_results[["cp"]] = t.test(as_tibble(d %>% filter(adi_cat == "No"))[,neurocogvariable],as_tibble(d %>% filter(adi_cat == "Yes"))[,neurocogvariable])
+
+t_test_results[["coi"]] = t.test(as_tibble(d %>% filter(coi_cat == "Yes"))[,neurocogvariable],as_tibble(d %>% filter(coi_cat == "No"))[,neurocogvariable])
+
+
+return(t_test_results)
+}
+sex_t_test_neurocog= function(neurocogvariable,sex){
+t_test_results = list()
+d <- read_csv("5.1 Release/Non-Brain/nc_y_nihtb.csv") %>% dplyr::select("src_subject_id","eventname","nihtbx_totalcomp_agecorrected",neurocogvariable)
+
+d = d[,-3] 
+d = d %>% filter(grepl("baseline",eventname))
+colnames(d)[1] = "ID"
+d = merge(full_sample,d,by = c("ID","eventname")) %>% filter(sex == sex)
+
+
+d$income = if_else(d$income %in% c(1:7),0,
+                   # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                   if_else(d$income %in% c(8:10),1,
+                           if_else(d$income == 999,NA,NA)))
+
+
+
+t_test_results[["2-level"]] = t.test(as_tibble(d %>% filter(income == 1))[,neurocogvariable],as_tibble(d %>% filter(income == 0))[,neurocogvariable])
+
+
+t_test_results[["6-10"]] = NULL
+for (class in c(6, 8, 9, 10)) {
+  d <- read_csv("5.1 Release/Non-Brain/nc_y_nihtb.csv") %>% 
+    dplyr::select("src_subject_id", "eventname", "nihtbx_totalcomp_agecorrected",neurocogvariable)
+  
+  d = d[, -3]
+  d = d %>% filter(grepl("baseline", eventname))
+  colnames(d)[1] = "ID"
+  d = merge(full_sample, d, by = c("ID", "eventname"))
+  
+  if (class == 6) {
+    d$income = if_else(d$income %in% c(1:5), 0,
+                       if_else(d$income %in% c(class, class + 1), 1,
+                               if_else(d$income == 999, NA, NA)))
+    
+    t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(d %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(d %>% filter(income == 0))[,neurocogvariable])
+  } else {
+    d$income = if_else(d$income %in% c(1:5), 0,
+                       if_else(d$income %in% c(class), 1,
+                               if_else(d$income == 999, NA, NA)))
+    
+    t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(d %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(d %>% filter(income == 0))[,neurocogvariable])
+  }
+}
+
+t_test_results[["cp"]] = t.test(as_tibble(d %>% filter(adi_cat == "No"))[,neurocogvariable],as_tibble(d %>% filter(adi_cat == "Yes"))[,neurocogvariable])
+
+t_test_results[["coi"]] = t.test(as_tibble(d %>% filter(coi_cat == "Yes"))[,neurocogvariable],as_tibble(d %>% filter(coi_cat == "No"))[,neurocogvariable])
+
+
+return(t_test_results)
+
+}
+nonnih_t_test = function(ncdata,neurocogvariable,group){
+if(group == "All"){
+lmt_t_test_results = NULL
+temp = ncdata
+colnames(temp)[1] = "ID"
+temp = merge(full_sample[,c("ID","eventname","income","adi_cat","coi_cat")],
+            temp[,c("ID","eventname",neurocogvariable)],
+            by = c("ID","eventname"))
+
+
+
+temp$income = if_else(temp$income %in% c(1:7),0,
+                   # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                   if_else(temp$income %in% c(8:10),1,
+                           if_else(temp$income == 999,NA,NA)))
+
+
+
+lmt_t_test_results[["2-level"]] = t.test(as_tibble(temp %>% filter(income == 1))[,neurocogvariable],
+                                         as_tibble(temp %>% filter(income == 0))[,neurocogvariable])
+
+ 
+ 
+
+
+lmt_t_test_results[["6-10"]] = NULL
+for (class in c(6, 8, 9, 10)) {
+  temp = ncdata
+  colnames(temp)[1] = "ID"
+  temp = merge(full_sample[,c("ID","eventname","income","adi_cat","coi_cat")],
+               temp[,c("ID","eventname",neurocogvariable)],
+               by = c("ID","eventname"))
+  if (class == 6) {
+    temp$income = if_else(temp$income %in% c(1:5), 0,
+                       if_else(temp$income %in% c(class, class + 1), 1,
+                               if_else(temp$income == 999, NA, NA)))
+    
+    lmt_t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(temp %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(temp %>% filter(income == 0))[,neurocogvariable])
+  } else {
+    temp$income = if_else(temp$income %in% c(1:5), 0,
+                       if_else(temp$income %in% c(class), 1,
+                               if_else(temp$income == 999, NA, NA)))
+    
+    lmt_t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(temp %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(temp %>% filter(income == 0))[,neurocogvariable])
+  }
+}
+
+temp = ncdata
+colnames(temp)[1] = "ID"
+temp = merge(full_sample[,c("ID","eventname","income","adi_cat","coi_cat")],
+             temp[,c("ID","eventname",neurocogvariable)],
+             by = c("ID","eventname"))
+
+lmt_t_test_results[["cp"]] = t.test(as_tibble(temp %>% filter(adi_cat == "No"))[,neurocogvariable],
+                                    as_tibble(temp %>% filter(adi_cat == "Yes"))[,neurocogvariable])
+
+lmt_t_test_results[["coi"]] = t.test(as_tibble(temp %>% filter(coi_cat == "Yes"))[,neurocogvariable],as_tibble(temp %>% filter(coi_cat == "No"))[,neurocogvariable])
+
+
+}
+else if(group == "Male"){
+lmt_t_test_results = NULL
+temp = ncdata
+colnames(temp)[1] = "ID"
+temp = merge(full_sample[,c("ID","eventname","income","adi_cat","coi_cat","sex")],
+               temp[,c("ID","eventname",neurocogvariable)],
+               by = c("ID","eventname")) 
+temp = temp %>% filter(sex == group)
+
+
+temp$income = if_else(temp$income %in% c(1:7),0,
+                   # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                   if_else(temp$income %in% c(8:10),1,
+                           if_else(temp$income == 999,NA,NA)))
+
+
+
+lmt_t_test_results[["2-level"]] = t.test(as_tibble(temp %>% filter(income == 1))[,neurocogvariable],
+                                         as_tibble(temp %>% filter(income == 0))[,neurocogvariable])
+
+ 
+ 
+
+
+lmt_t_test_results[["6-10"]] = NULL
+for (class in c(6, 8, 9, 10)) {
+  temp = ncdata
+  colnames(temp)[1] = "ID"
+  temp = merge(full_sample[,c("ID","eventname","income","adi_cat","coi_cat","sex")],
+               temp[,c("ID","eventname",neurocogvariable)],
+               by = c("ID","eventname")) 
+  temp = temp %>% filter(sex == group)
+  if (class == 6) {
+    temp$income = if_else(temp$income %in% c(1:5), 0,
+                       if_else(temp$income %in% c(class, class + 1), 1,
+                               if_else(temp$income == 999, NA, NA)))
+    
+    lmt_t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(temp %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(temp %>% filter(income == 0))[,neurocogvariable])
+  } else {
+    temp$income = if_else(temp$income %in% c(1:5), 0,
+                       if_else(temp$income %in% c(class), 1,
+                               if_else(temp$income == 999, NA, NA)))
+    
+    lmt_t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(temp %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(temp %>% filter(income == 0))[,neurocogvariable])
+  }
+}
+
+temp = ncdata
+colnames(temp)[1] = "ID"
+temp = merge(full_sample[,c("ID","eventname","income","adi_cat","coi_cat","sex")],
+               temp[,c("ID","eventname",neurocogvariable)],
+               by = c("ID","eventname"))
+temp = temp %>% filter(sex == group)
+lmt_t_test_results[["cp"]] = t.test(as_tibble(temp %>% filter(adi_cat == "No"))[,neurocogvariable],
+                                    as_tibble(temp %>% filter(adi_cat == "Yes"))[,neurocogvariable])
+  
+ lmt_t_test_results[["coi"]] = t.test(as_tibble(temp %>% filter(coi_cat == "Yes"))[,neurocogvariable],as_tibble(temp %>% filter(coi_cat == "No"))[,neurocogvariable])
+ 
+
+
+}
+else if(group == "Female"){
+  lmt_t_test_results = NULL
+temp = ncdata
+colnames(temp)[1] = "ID"
+temp = merge(full_sample[,c("ID","eventname","income","adi_cat","coi_cat","sex")],
+               temp[,c("ID","eventname",neurocogvariable)],
+               by = c("ID","eventname")) %>% filter(sex == group)
+
+
+
+temp$income = if_else(temp$income %in% c(1:7),0,
+                   # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                   if_else(temp$income %in% c(8:10),1,
+                           if_else(temp$income == 999,NA,NA)))
+
+
+
+lmt_t_test_results[["2-level"]] = t.test(as_tibble(temp %>% filter(income == 1))[,neurocogvariable],
+                                         as_tibble(temp %>% filter(income == 0))[,neurocogvariable])
+
+ lmt_t_test_results[["coi"]] = t.test(as_tibble(temp %>% filter(coi_cat == "Yes"))[,neurocogvariable],as_tibble(temp %>% filter(coi_cat == "No"))[,neurocogvariable])
+
+ 
+
+
+lmt_t_test_results[["6-10"]] = NULL
+for (class in c(6, 8, 9, 10)) {
+  temp = ncdata
+  colnames(temp)[1] = "ID"
+  temp = merge(full_sample[,c("ID","eventname","income","adi_cat","coi_cat","sex")],
+               temp[,c("ID","eventname",neurocogvariable)],
+               by = c("ID","eventname")) %>% filter(sex == group)
+  if (class == 6) {
+    temp$income = if_else(temp$income %in% c(1:5), 0,
+                       if_else(temp$income %in% c(class, class + 1), 1,
+                               if_else(temp$income == 999, NA, NA)))
+    
+    lmt_t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(temp %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(temp %>% filter(income == 0))[,neurocogvariable])
+  } else {
+    temp$income = if_else(temp$income %in% c(1:5), 0,
+                       if_else(temp$income %in% c(class), 1,
+                               if_else(temp$income == 999, NA, NA)))
+    
+    lmt_t_test_results[[as.character(class)]] = 
+      t.test(as_tibble(temp %>% filter(income == 1))[,neurocogvariable],
+             as_tibble(temp %>% filter(income == 0))[,neurocogvariable])
+  }
+}
+
+temp = ncdata
+colnames(temp)[1] = "ID"
+temp = merge(full_sample[,c("ID","eventname","income","adi_cat","coi_cat","sex")],
+               temp[,c("ID","eventname",neurocogvariable)],
+               by = c("ID","eventname")) %>% filter(sex == group)
+
+lmt_t_test_results[["cp"]] = t.test(as_tibble(temp %>% filter(adi_cat == "No"))[,neurocogvariable],
+                                    as_tibble(temp %>% filter(adi_cat == "Yes"))[,neurocogvariable])
+  
+  
+lmt_t_test_results[["coi"]] = t.test(as_tibble(temp %>% filter(coi_cat == "Yes"))[,neurocogvariable],as_tibble(temp %>% filter(coi_cat == "No"))[,neurocogvariable])
+
+
+}
+ 
+   return(lmt_t_test_results)  
+}
+
+
+```
+
+
+### Summary Functions
+
+```{r Barplots}
+barplot_fun = function(model){
+  barvars = model$Imp_Var[["importance"]] %>%
+    top_n(10) %>% 
+    cbind(Predictor =row.names(.)) %>% 
+    mutate(`Variable Type` = if_else(grepl("lh|rh|Right|Left|to|major|minor|Whole|Right|callosum|Diff|FA|Fiber|Area|Volume", Predictor), "Brain","Demographic")) %>% group_by(`Variable Type`)
+  
+  if("Overall" %in% colnames(barvars) == FALSE){
+    colnames(barvars)[2] = "Overall"
+    
+    
+  }
+  barvars = subset(barvars,Overall > 0)
+  
+  
+  barvars$Predictor = gsub("`","",barvars$Predictor)
+  barvars$Predictor = gsub("race","Race: ",barvars$Predictor)
+  
+  rownames(barvars) = 1:nrow(barvars)
+  
+  ggplot(data = barvars,aes(x = reorder(Predictor,Overall),y = Overall,fill =`Variable Type`)) +
+    geom_bar(stat = "identity") +
+    coord_flip() +
+    labs(x = NULL, y = "Variable Importance (%)")+
+    theme_classic() + scale_fill_manual(cols)
+  
+  
+  
+  
+  # base r version 
+  ## barvars = barvars[order(barvars$Overall, decreasing = TRUE),]
+  ## g = barplot(height = barvars[["Overall"]], 
+  # horiz = TRUE,
+  # names.arg = barvars$Predictor,
+  # las = 2)
+  
+  
+}
+three_way_panel = function(model1,model2,model3){
+  
+  #barplots 
+  plot1 = barplot_fun(model1) + theme_linedraw()+ scale_fill_manual(values = cols)
+  plot2 =  barplot_fun(model2) + theme_linedraw()+ scale_fill_manual(values = cols)
+  plot3 = barplot_fun(model3) + theme_linedraw()+ scale_fill_manual(values = cols)
+
+  #plots together 
+combinedplot_3 = 
+  ggarrange(
+     ggarrange(model1$comp_plot+geom_smooth(method = "lm"), model1$histogram,plot1, nrow = 1),
+     ggarrange(model2$comp_plot+geom_smooth(method = "lm"),model2$histogram,plot2, nrow = 1),
+     ggarrange(model3$comp_plot+geom_smooth(method = "lm"),model3$histogram,plot3, nrow = 1),
+     nrow = 3)
+
+combinedplot_2 = 
+    ggarrange(
+    ggarrange(model1$comp_plot+geom_smooth(method = "lm"), model1$histogram,plot1, nrow = 1),
+    ggarrange(model2$comp_plot+geom_smooth(method = "lm"),model2$histogram,plot2, nrow = 1),
+    nrow= 2)
+ return(list(combinedplot_2,combinedplot_3))   
+}
+two_way_panel = function(model1,model2){
+  
+  #barplots 
+  plot1 = barplot_fun(model1) + theme_linedraw()+ scale_fill_manual(values = cols)
+  plot2 =  barplot_fun(model2) + theme_linedraw()+ scale_fill_manual(values = cols)
+
+  #plots together 
+combinedplot_2 = 
+  ggarrange(
+     ggarrange(model1$comp_plot+geom_smooth(method = "lm"), model1$histogram,plot1, nrow = 1),
+     ggarrange(model2$comp_plot+geom_smooth(method = "lm"),model2$histogram,plot2, nrow = 1),
+     nrow = 2)
+
+
+ return(combinedplot_2)   
+}
+
+
+
+```
+
+```{r Variable Importance Summary Plots}
+#Functions
+feature_importance_plot = function(models,modality){
+  list_of_models = list(c(models[["brain-only"]][[modality]]),
+                        c(models[["demo"]][[modality]]))
+  
+ 
+  
+  run = 0 
+ t = tibble()
+  for (i in list_of_models){
+    if("Overall" %in% colnames(i[["Imp_Var"]][["importance"]]) == FALSE){
+      
+      colnames(i[["Imp_Var"]][["importance"]])[1] = "Overall"
+     i[["Imp_Var"]][["importance"]] =  i[["Imp_Var"]][["importance"]] %>% dplyr::select(Overall)
+      
+    }
+    
+    
+    
+    run = run + 1
+    a =cbind(i[["Imp_Var"]][["importance"]]%>% slice_max(Overall,n = 10,with_ties = FALSE) %>% filter(Overall != 0) %>% arrange(desc(Overall)),
+             i[["Imp_Var"]][["importance"]] %>% slice_max(Overall,n = 10,with_ties = FALSE) %>% filter(Overall != 0) %>% row.names())
+    a$Ranking = seq(1:nrow(a))
+    
+    if(run == 1){
+      a$Model = rep("Brain_Only",nrow(a))
+      
+    }
+   
+     if(run == 2){
+      a$Model = rep("Demographics",nrow(a))
+      
+    }
+    t = rbind(t,a)
+    
+  }
+  row.names(t) = NULL
+  colnames(t) = c("Relative Importance","Feature","Ranking","Model")
+  #t$Feature <- gsub(".*\\((.*)\\).*", "\\1", t$Feature)
+  #t$Model = c(rep("Brain_Only",10),rep("Demographics",10))
+  
+  
+  
+  
+  t = t %>%
+    filter(str_detect(Feature, "\\b(rh|lh|Right|Left|to|T1|Contrast|FA|Diff|Area|Volume|Thickness|Fiber|Sulcal)\\b"))
+  
+  
+  t$Feature = gsub("left Hemisphere","Left hemisphere",t$Feature)
+  t$Feature = gsub("right Hemisphere","Right hemisphere",t$Feature)
+  
+  
+  
+  #t$Feature <- gsub("^rh-|^lh-| rh-| lh-|left-|right-", "", t$Feature)
+  #t$Feature <- gsub(".*orbitofrontal.*", "orbitofrontal", t$Feature)
+  #t$Feature <- gsub(".*cingulate.*", "cingulate", t$Feature)
+  #t$Feature <- gsub(".*occipital.*", "occipital", t$Feature)
+  t$Feature <- gsub(".*motion.*", "Mean Motion", t$Feature)
+  #t$Feature <- gsub("fronto-parietal", "frontoparietal", t$Feature)
+  #t$Feature <- gsub("cingulo-parietal", "cinguloparietal", t$Feature)
+  #t$Feature <- gsub("cingulo-opercular", "cinguloopercular", t$Feature)
+  
+  
+  
+  #t <- t %>% separate_rows(Feature, sep = "-")
+  
+  
+  t$adjusted = case_when(t$Feature %in% semi_join(split(t,t$Model)[[1]],split(t,t$Model)[[length(split(t,t$Model))]], by = c("Feature"))$Feature  ~ "Both",
+                         t$Model == "Demographics" ~ "In. Demographics",
+                         t$Model == "Brain_Only" ~  "Ex. Demographics")
+  
+  
+  
+  t = t %>% group_by(Feature) %>% summarise(`Average Ranking` = mean(Ranking),
+                                            `Average Importance` = as.numeric(mean(`Relative Importance`)), 
+                                            `Appearences in Top 10 across Models` = n(),
+                                            Model_Types = first(adjusted))
+  
+  
+  t$Model_Types = ordered(t$Model_Types,c("Ex. Demographics","In. Demographics","Both")) 
+  levels(t$Model_Types) = c("Brain Features Only","Brain Features with Demographics","Both")
+  t$Feature = gsub("`","",t$Feature)
+  library(ggrepel)
+  
+  p = ggplot(t, aes(y = `Average Ranking`, x = Model_Types, label = Feature)) + 
+    #geom_point(size = 15) +
+    geom_text_repel(color = "deeppink3",
+                    #box.padding = 1,
+                    label.padding = 2,
+                    point.padding = 3,
+                    force = 5,
+                    direction = "y",
+                    segment.size = 1,
+                    size = 8.5,
+                    fontface = "bold",
+                    segment.color = 'black',
+                    max.overlaps = 5) +  
+    scale_y_reverse() +
+    theme(legend.position = "none") + 
+    #scale_color_gradient(breaks = waiver(),n.breaks = 3,low = "lightpink",high = "deeppink3") +
+    theme_classic() +
+   # theme(legend.position = "bottom",          
+    #      legend.direction = "horizontal",      
+    #      legend.title = element_text(size = 15,hjust = 0.5),  
+    #      legend.text = element_text(size = 10),
+    #      axis.text = element_text(size = 10))  +
+    labs(x = "Presence in Top 10 across Models", y = "Average Ranking")
+
+return(p)
+}
+VI_Summary = function(models,modality,sum_plot){
+p1 =  barplot_fun(models[["brain-only"]][[modality]]) +
+                  scale_fill_manual(values = cols) +
+                  theme_classic() +
+                  theme(axis.title = element_text(size = 17),
+                        axis.text = element_text(size = 15),
+                        legend.title = element_text(size = 15),
+                        legend.text = element_text(size = 13),) +
+                  ggtitle("Brain Features Only") +
+                  theme(plot.margin = margin(t = 20, b = 10, l = 10, r = 10))
+p2 =   barplot_fun(models[["demo"]][[modality]]) +
+                   scale_fill_manual(values = cols) +
+                   theme_classic() +
+                   theme(axis.title = element_text(size = 17),
+                        axis.text = element_text(size = 15),
+                        legend.title = element_text(size = 15),
+                        legend.text = element_text(size = 13)) +
+                   ggtitle("Brain Features with Demographics") +
+                   theme(plot.margin = margin(t = 20, b = 10, l = 10, r = 10))
+
+combined_VI = (sum_plot)+((p1/p2)) +plot_layout(ncol = 2,widths = c(3,1))
+
+return(combined_VI)
+}
+
+
+```
+
+
+
