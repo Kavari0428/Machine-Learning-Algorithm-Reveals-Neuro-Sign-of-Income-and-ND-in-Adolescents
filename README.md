@@ -1,8 +1,7 @@
 # ABCD Machine Learning Income and Neighborhood Disadvantage Study
 
 
-
-Code needed for the analyses conducted in manuscript: "Machine Learning Algorithm Reveals Neurodevelopmental Signatures of Combined Family Income and Neighborhood Disadvantage in Adolescents"
+This repository stores the R code for for the analyses conducted in the manuscript: "Machine Learning Algorithm Reveals Neurodevelopmental Signatures of Combined Family Income and Neighborhood Disadvantage in Adolescents"
 
 The code is split into three files for the sake of cohesion:
 1. Pre-analysis
