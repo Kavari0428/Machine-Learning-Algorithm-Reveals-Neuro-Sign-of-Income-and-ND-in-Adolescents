@@ -1,0 +1,1520 @@
+---
+title: "Machine Learning Algorithm Reveals Neurodevelopmental Signatures of Combined Family Income and Neighborhood Disadvantage in Adolescents"
+output: word_document
+date: "`r Sys.Date()`"
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/ML_Projects/Income")
+load("Income_Latest.RData")
+library(tidyverse)
+library(gt)
+library(patchwork)
+
+
+
+
+```
+
+# Table 1: Characteristics
+
+```{r,echo=FALSE}
+library(gt)
+
+
+full_sample = rbind(baseline_datasets[[4]],baseline_datasets_test[[4]])
+full_sample$income1 =  if_else(full_sample$income %in% c(1:7),"Low Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(full_sample$income %in% c(8:10),"Mid-High Income",
+                              if_else(full_sample$income == 999,NA,NA)))
+
+full_sample$income2 = if_else(full_sample$income %in% c(1:7),"Low Income",
+                      if_else(full_sample$income %in% c(8:9),"Mid Income",
+                      #if_else(full_sample$income %in% c(9),"Upper-Mid Income",
+                     # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                      if_else(full_sample$income == 10,"High Income",
+                              if_else(full_sample$income == 999,NA,NA))))
+
+
+full_sample = full_sample %>% na.omit()
+
+Table1names = c("n",
+                "age",
+                "Male", "Other",
+                "White","Black","Asian","Other","Hispanic",
+                "Level 1 (< $5,000)", "Level 2 ($5,000-11,999)", "Level 3 ($12,000-15,999)",
+                "Level 4 ($16,000-24,999)","Level 5 ($25,000-34,999)", " Level 6 ($35,000-49,999)",
+                "Level 7 ($50,000-74,999)","Level 8 ($75,000-99,999)","Level 9 ($100,000-199,999)",
+                "Level 10 (> $200,000)",
+                "IQ",
+                "rsfMRI Motion", "dMRI Motion",
+                "CBCL Attention","CBCL Externalizing","CBCL Internalizing",
+                "Area Deprivation Index-ADI","Child Opportunity Index-COI")
+
+sample_tots = 
+  c(
+    nrow(full_sample),
+    " ",
+    round(length(which(full_sample$sex == "Male")) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$sex == "Other")) / nrow(full_sample), 4)*100,
+    round(length(which(full_sample$race == "White")) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$race == "Black")) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$race == "Asian")) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$race == "Other")) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$race == "Hispanic")) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 1)) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 2)) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 3)) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 4)) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 5)) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 6)) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 7)) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 8)) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 9)) / nrow(full_sample), 3)*100,
+    round(length(which(full_sample$income == 10)) / nrow(full_sample), 3)*100,
+    " ",
+    " ",
+    " ",
+    " ",
+    " ",
+    " ",
+    " ",
+    " "
+  )
+
+sample_mean = c(
+  " ",
+  round(mean(full_sample$age, na.rm = TRUE)/12, 2),
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  round(mean(full_sample$IQ, na.rm = TRUE), 2),
+  round(mean(full_sample$fmotion, na.rm = TRUE), 2),
+  round(mean(full_sample$dmotion, na.rm = TRUE), 2),
+  round(mean(full_sample$CBCL_Attention, na.rm = TRUE), 2),
+  round(mean(full_sample$CBCL_Externalizing, na.rm = TRUE), 2),
+  round(mean(full_sample$CBCL_Internalizing, na.rm = TRUE), 2),
+  round(mean(full_sample$adi, na.rm = TRUE),2),
+  round(mean(full_sample$coi, na.rm = TRUE),2)
+)
+
+sample_sd = c(
+  " ",
+  round(sd(full_sample$age, na.rm = TRUE)/12, 2),
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  " ",
+  round(sd(full_sample$IQ, na.rm = TRUE), 2),
+  round(sd(full_sample$fmotion, na.rm = TRUE), 2),
+  round(sd(full_sample$dmotion, na.rm = TRUE), 2),
+  round(sd(full_sample$CBCL_Attention, na.rm = TRUE), 2),
+  round(sd(full_sample$CBCL_Externalizing, na.rm = TRUE), 2),
+  round(sd(full_sample$CBCL_Internalizing, na.rm = TRUE), 2),
+  round(sd(full_sample$adi, na.rm = TRUE),2),
+  round(sd(full_sample$coi, na.rm = TRUE),2)
+)
+
+Table1 = cbind(Table1names,sample_tots,sample_mean,sample_sd)
+Table1 = as_tibble(Table1)
+
+colnames(Table1) = c(" ","Total","Mean","SD")
+
+# Table grouping not working, works with pdf and html though
+gt(Table1) %>%
+tab_row_group(
+  label = "1",
+  rows = c(1:2)
+) %>%
+tab_row_group(
+  label = "Sex (%)",
+  rows = c(3:4)
+) %>%
+tab_row_group(
+  label = "Race (%)",
+  rows = c(5:8)
+) %>%
+tab_row_group(
+  label = "Ethnicity (%)",
+  rows = c(9)
+) %>%
+tab_row_group(
+  label = "Neighborhood Disadvantage",
+  rows = c(26:27)
+) %>%
+tab_row_group(
+  label = "Income Levels (%)",
+  rows = c(10:19)
+) %>%
+  tab_row_group(
+  label = "2",
+  rows = c(20:25)
+) %>%
+row_group_order(groups = c("1","Sex (%)","Race (%)","Ethnicity (%)","2","Neighborhood Disadvantage","Income Levels (%)"))
+
+
+
+```
+
+\pagebreak
+
+# Table 2: Primary Model Performance Metrics
+
+```{r, echo = FALSE, warning=FALSE}
+
+adi_model_table = NULL
+
+for(i in names(adi_models[["brain-only"]])){
+  row = c(i,
+          adi_models[["brain-only"]][[i]][["Results"]]$testAcc[["Accuracy"]],
+          adi_models[["demo"]][[i]][["Results"]]$testAcc[["Accuracy"]],
+          adi_models[["brain-only"]][[i]][["Results"]]$AUC,
+          adi_models[["demo"]][[i]][["Results"]]$AUC,
+          adi_models[["brain-only"]][[i]][["Results"]]$train_acc,
+          adi_models[["demo"]][[i]][["Results"]]$train_acc,
+          adi_models[["brain-only"]][[i]][["Results"]]$train_auc,
+          adi_models[["demo"]][[i]][["Results"]]$train_auc
+    )
+ 
+ adi_model_table = rbind(adi_model_table,row) 
+  
+}
+
+colnames(adi_model_table) = c("Modality", "Accuracy_Ex", "Accuracy_In", "AUC_Ex", "AUC_In", 
+                                  "Accuracy_Ex_T", "Accuracy_In_T", "AUC_Ex_T", "AUC_In_T")
+
+adi_model_table = as_tibble(adi_model_table) 
+adi_model_table[,-1] = lapply(adi_model_table[,-1],as.numeric)
+adi_model_table[,-1] = lapply(adi_model_table[,-1],round,3)
+
+
+adi_model_table$Modality = ordered(adi_model_table$Modality,level = c("Structural","Functional","DTI","Multimodal"))
+
+
+levels(adi_model_table$Modality) = c("sMRI","RSFC","DTI","Multimodal")
+
+
+
+coi_model_table = NULL
+
+for(i in names(coi_models[["brain-only"]])){
+  row = c(i,
+          coi_models[["brain-only"]][[i]][["Results"]]$testAcc[["Accuracy"]],
+          coi_models[["demo"]][[i]][["Results"]]$testAcc[["Accuracy"]],
+          coi_models[["brain-only"]][[i]][["Results"]]$AUC,
+          coi_models[["demo"]][[i]][["Results"]]$AUC,
+          
+          coi_models[["brain-only"]][[i]][["Results"]]$train_acc,
+          coi_models[["demo"]][[i]][["Results"]]$train_acc,
+          coi_models[["brain-only"]][[i]][["Results"]]$train_auc,
+          coi_models[["demo"]][[i]][["Results"]]$train_auc
+    )
+ 
+  coi_model_table = rbind(coi_model_table, row) 
+}
+
+colnames(coi_model_table) =c("Modality", "Accuracy_Ex", "Accuracy_In", "AUC_Ex", "AUC_In", 
+                            "Accuracy_Ex_T", "Accuracy_In_T", "AUC_Ex_T", "AUC_In_T")
+
+coi_model_table = as_tibble(coi_model_table) 
+coi_model_table[,-1] = lapply(coi_model_table[,-1], as.numeric)
+coi_model_table[,-1] = lapply(coi_model_table[,-1], round, 3)
+
+coi_model_table$Modality = ordered(coi_model_table$Modality, levels = c("Structural", "Functional", "DTI", "Multimodal"))
+
+levels(coi_model_table$Modality) = c("sMRI", "RSFC", "DTI", "Multimodal")
+
+
+
+
+
+
+
+
+income_sum_table_2 = tibble()
+
+# 2 cats
+
+# Initialize income_sum_table_2
+income_sum_table_2 <- tibble()
+
+# First for loop
+for (i in names(income_models_2[["brain-only"]])) {
+  
+  modality <- i
+  
+  testAcc_brain <- as.numeric(round(income_models_2[["brain-only"]][[i]][["Results"]]$testAcc[["Accuracy"]], 3))
+  testAcc_demo <- as.numeric(round(income_models_2[["demo"]][[i]][["Results"]]$testAcc[["Accuracy"]], 3))
+  AUC_brain <- as.numeric(round(income_models_2[["brain-only"]][[i]][["Results"]]$AUC, 3))
+  AUC_demo <- as.numeric(round(income_models_2[["demo"]][[i]][["Results"]]$AUC, 3))
+  
+  testAcc_brain_train <- as.numeric(round(income_models_2[["brain-only"]][[i]][["Results"]]$train_acc, 3))
+  testAcc_demo_train <- as.numeric(round(income_models_2[["demo"]][[i]][["Results"]]$train_acc, 3))
+  AUC_brain_train <- as.numeric(round(income_models_2[["brain-only"]][[i]][["Results"]]$train_auc, 3))
+  AUC_demo_train <- as.numeric(round(income_models_2[["demo"]][[i]][["Results"]]$train_auc, 3))
+  
+  row <- c(modality, testAcc_brain, testAcc_demo, AUC_brain, AUC_demo,
+           testAcc_brain_train, testAcc_demo_train, AUC_brain_train, AUC_demo_train)
+  
+  income_sum_table_2 <- rbind(income_sum_table_2, row)
+}
+
+colnames(income_sum_table_2) <- c("Modality", "Accuracy_Ex", "Accuracy_In", "AUC_Ex", "AUC_In", 
+                                  "Accuracy_Ex_T", "Accuracy_In_T", "AUC_Ex_T", "AUC_In_T")
+income_sum_table_2[, 2:8] <- lapply(income_sum_table_2[, 2:8], as.numeric)
+income_sum_table_2$Modality <- ordered(income_sum_table_2$Modality, 
+                                       levels = c("Structural", "Functional", "DTI", "Multimodal"))
+levels(income_sum_table_2$Modality) = c("sMRI", "RSFC", "DTI", "Multimodal")
+
+
+
+# Initialize income_sum_table_3
+income_sum_table_3 <- tibble()
+
+# Second for loop (matching the first loop structure)
+for (i in names(income_models_3[["brain-only"]])) {
+  
+  modality <- i
+  
+  testAcc_brain <- as.numeric(round(income_models_3[["brain-only"]][[i]][["Results"]]$testAcc[["Accuracy"]], 3))
+  testAcc_demo <- as.numeric(round(income_models_3[["demo"]][[i]][["Results"]]$testAcc[["Accuracy"]], 3))
+  AUC_brain <- as.numeric(round(income_models_3[["brain-only"]][[i]][["Results"]]$AUC, 3))
+  AUC_demo <- as.numeric(round(income_models_3[["demo"]][[i]][["Results"]]$AUC, 3))
+  
+  testAcc_brain_train <- as.numeric(round(income_models_3[["brain-only"]][[i]][["Results"]]$train_acc, 3))
+  testAcc_demo_train <- as.numeric(round(income_models_3[["demo"]][[i]][["Results"]]$train_acc, 3))
+  AUC_brain_train <- as.numeric(round(income_models_3[["brain-only"]][[i]][["Results"]]$train_auc, 3))
+  AUC_demo_train <- as.numeric(round(income_models_3[["demo"]][[i]][["Results"]]$train_auc, 3))
+  
+  row <- c(modality, testAcc_brain, testAcc_demo, AUC_brain, AUC_demo,
+           testAcc_brain_train, testAcc_demo_train, AUC_brain_train, AUC_demo_train)
+  
+  income_sum_table_3 <- rbind(income_sum_table_3, row)
+}
+
+colnames(income_sum_table_3) <- c("Modality", "Accuracy_Ex", "Accuracy_In", "AUC_Ex", "AUC_In", 
+                                  "Accuracy_Ex_T", "Accuracy_In_T", "AUC_Ex_T", "AUC_In_T")
+income_sum_table_3[, 2:8] <- lapply(income_sum_table_3[, 2:8], as.numeric)
+income_sum_table_3$Modality <- ordered(income_sum_table_3$Modality, 
+                                       levels = c("Structural", "Functional", "DTI", "Multimodal"))
+
+levels(income_sum_table_3$Modality) = c("sMRI", "RSFC", "DTI", "Multimodal")
+
+
+income_sum_table_2$Class = "Combined Family Income - Low (Levels 1-7) | High Income (Levels 8-10)"
+income_sum_table_3$Class = "Trichotomous - Low (Levels 1-7) | Medium (Level 8) | High Income (Levels 9-10)"
+adi_model_table$Class <- "Area Deprivation Index, ADI - (Low/High ADI)"
+coi_model_table$Class <- "Child Opportunity Index, COI - (Low/High COI)"
+combined_performance_tab = tibble()
+combined_performance_tab = rbind(combined_performance_tab,income_sum_table_2)
+#combined_performance_tab = rbind(combined_performance_tab,income_sum_table_3)
+combined_performance_tab = rbind(combined_performance_tab,adi_model_table)
+combined_performance_tab = rbind(combined_performance_tab,coi_model_table)
+performance_t_test = function(models,configuration,modality){
+
+return(t.test(models[[configuration]][[modality]][["eln"]][["results"]][["AUC"]],mu = 0.5,alternative = "greater")$p.value)
+  
+}
+models = list(income_models_2,adi_models,coi_models)
+performance_p_vals = NULL
+for (model in models) {
+for(c in names(income_models_2)){
+  for(m in names(income_models_2[[c]])){
+    
+  performance_p_vals = c(performance_p_vals,performance_t_test(model,c,m))
+    
+  }
+
+}
+}
+
+# combined_performance_tab %>% 
+#   group_by(Class) %>%
+#   gt() %>%
+#   tab_spanner(
+#     label = "Train",
+#     columns = contains("Ex_T"),
+#     id = "Ex.Demographics_Train"
+#   ) %>%
+#   tab_spanner(
+#     label = "Train",
+#     id = "In.Demographics_Train",
+#     columns = contains("In_T")
+#   ) %>%
+#   tab_spanner(
+#     label = "Test",
+#     columns = c("Accuracy_Ex","AUC_Ex"),
+#     id = "Ex.Demographics_Test"
+#   ) %>%
+#   tab_spanner(
+#     label = "Test",
+#     columns = c("Accuracy_In","AUC_In"),
+#     id = "In.Demographics_Test"
+#   ) %>%
+#   tab_spanner(
+#     label = "Brain Features Only",
+#     spanner = c("Ex.Demographics_Train","Ex.Demographics_Test")
+#   ) %>%
+#   tab_spanner(
+#     label = "Brain Features with Demographics",
+#     spanner = c("In.Demographics_Train","In.Demographics_Test")
+#   ) %>%
+#   cols_move(
+#     columns = c("Accuracy_Ex_T","AUC_Ex_T"),
+#     after = c("AUC_Ex")
+#   ) %>%
+#   # Rename column labels
+#   cols_label(
+#     Accuracy_Ex = "Accuracy",
+#     AUC_Ex = "AUC",
+#     Accuracy_Ex_T = "Accuracy",
+#     AUC_Ex_T =  "AUC",
+#     Accuracy_In = "Accuracy",
+#     AUC_In = "AUC",
+#     Accuracy_In_T = "Accuracy",
+#     AUC_In_T = "AUC"
+#   ) 
+
+
+# Custom formatter for p-values
+format_p <- function(p) {
+  ifelse(p < 0.001, "< 0.001", format(round(p, 3), nsmall = 3))
+}
+
+# Function to update AUC columns with formatted p-values
+update_auc_with_p <- function(df, row_idx, col_name, p_vals) {
+  df[row_idx, col_name] <- paste0(
+    df[row_idx, col_name], " (", format_p(p_vals), ")"
+  )
+  return(df)
+}
+
+# Apply updates
+combined_performance_tab <- update_auc_with_p(combined_performance_tab, 1:4, "AUC_Ex_T", performance_p_vals[1:4])
+combined_performance_tab <- update_auc_with_p(combined_performance_tab, 1:4, "AUC_In_T", performance_p_vals[5:8])
+
+combined_performance_tab <- update_auc_with_p(combined_performance_tab, 5:8, "AUC_Ex_T", performance_p_vals[9:12])
+combined_performance_tab <- update_auc_with_p(combined_performance_tab, 5:8, "AUC_In_T", performance_p_vals[13:16])
+
+combined_performance_tab <- update_auc_with_p(combined_performance_tab, 9:12, "AUC_Ex_T", performance_p_vals[17:20])
+combined_performance_tab <- update_auc_with_p(combined_performance_tab, 9:12, "AUC_In_T", performance_p_vals[21:24])
+
+
+combined_performance_tab %>% 
+  group_by(Class) %>%
+  gt() %>%
+  cols_hide(contains("Accuracy")) %>%
+  tab_spanner(
+    label = "Test",
+    columns = c("AUC_Ex","AUC_In")
+  ) %>%
+  tab_spanner(
+    label = "Train",
+    columns = c("AUC_Ex_T","AUC_In_T")
+  ) %>%
+cols_label(
+    AUC_Ex = "Brain Features Only AUC",
+    AUC_Ex_T = "Brain Features Only AUC (p)",
+    AUC_In = "Brain Features with Demographics AUC",
+    AUC_In_T = "Brain Features with Demographics AUC (p)"
+  ) %>% 
+  cols_align("center")
+
+
+income_sum_table_2$Class = "Income"
+income_sum_table_3$Class = "Trichotomous Class"
+                                                                                           
+```
+Income models classify groups split by median income level (Level 8) with those at median and above being put in one class and all those below in another. The classes in models based on neighborhood disadvantage indices (ADI, COI) were split by mean. Neural features were derived from the ABCD Study dataset (Data Release 5.1) for neuroanatomy (sMRI), resting-state connectivity (RSFC), and white-matter microstructure (DTI). Multimodal models combined all features.
+
+sMRI: structural MRI, RSFC: Resting-state functional connectivity, DTI: Diffusion Tensor Imaging, AUC: Area Under the Curve
+
+\pagebreak
+
+# Table 3: Sensitivity Analysis - Classification of Bottom 10-20% of Income Distribution Model Performance
+
+```{r, echo = FALSE, include = FALSE}
+el_plots = list()
+el_tables = list()
+for (model_type in c("brain-only","demo")){
+models = list("10" = c(income_models_2_el_10[[model_type]]), 
+              "9" = c(income_models_2_el_9[[model_type]]),
+              "8" =c(income_models_2_el_8[[model_type]]), 
+              "7" = c(income_models_2_el_7[[model_type]]))
+
+AUC = NULL
+ACC = NULL
+trainACC = NULL
+trainAUC = NULL
+for (level in c("10","9","8","7")){
+  for(model in models[[level]]){
+
+      AUC_ = model[["Results"]][["AUC"]]
+      ACC_ = model[["Results"]][["testAcc"]][["Accuracy"]]
+      trainACC_ = model[["Results"]][["train_acc"]]
+      trainAUC_ = model[["Results"]][["train_auc"]]
+  
+      AUC = rbind(AUC,AUC_)
+      ACC = rbind(ACC,ACC_)
+      trainACC = rbind(trainACC,trainACC_)
+      trainAUC = rbind(trainAUC,trainAUC_)
+      
+    }
+}
+x_axis = c(rep("Top 10-20% (Level 10)",4),rep("Above Median (Level 9)",4),rep("Median (Level 8)",4),rep("Below Median (Level 6-7)",4))
+Modality = rep(c("Structural","Functional","DTI","Multimodal"),4)
+temp = cbind(x_axis, Modality)
+AUC = cbind(temp,AUC)
+colnames(AUC)[3] = "metric"
+AUC = as_tibble(AUC)
+AUC$Modality = factor(AUC$Modality, levels =  c("Structural","Functional","DTI","Multimodal"))
+AUC$x_axis = factor(AUC$x_axis, levels = c("Top 10-20% (Level 10)","Above Median (Level 9)","Median (Level 8)","Below Median (Level 6-7)"))
+el_tables[[model_type]][["AUC"]] = cbind(AUC,trainAUC)
+
+
+ACC = cbind(temp,ACC)
+colnames(ACC)[3] = "metric"
+ACC = as_tibble(ACC)
+ACC$Modality = factor(ACC$Modality, levels = c("Structural","Functional","DTI","Multimodal"))
+ACC$x_axis = factor(ACC$x_axis, levels = c("Top 10-20% (Level 10)","Above Median (Level 9)","Median (Level 8)","Below Median (Level 6-7)"))
+el_tables[[model_type]][["ACC"]] = cbind(ACC,trainACC)
+
+
+#trainACC = cbind(temp,trainACC)
+#colnames(trainACC)[3] = "metric"
+#trainACC = as_tibble(trainACC)
+#trainACC$Modality = factor(trainACC$Modality, levels = c("Structural","Functional","DTI","Multimodal"))
+#trainACC$x_axis = factor(trainACC$x_axis, levels = c("Highest (Level 10)","Above Median (Level 9)","Median (Level 8)","Below Median (Level 6-7)"))
+#el_tables[[model_type]][["trainACC"]] = trainACC
+
+
+el_plots[[model_type]][["AUC"]] = 
+ggplot(data = AUC, aes(x = x_axis, y = as.numeric(metric), group = Modality)) +
+  geom_line(linewidth = 5, color = "red") +
+  geom_point(size = 10) +
+  facet_wrap(~Modality) +
+  ggtitle("Classification of Lowest Income (Levels 1-5): AUC") + 
+  labs(x = "Comparison Income Group",y = "AUC")
+
+el_plots[[model_type]][["ACC"]] = 
+ggplot(data = ACC, aes(x = x_axis, y = as.numeric(metric), group = Modality)) +
+  geom_line(linewidth = 5, color = "red") +
+  geom_point(size = 10) +
+ # geom_line(data = trainACC,aes(x = x_axis,y = as.numeric(metric)),linewidth = 5, color = "blue") + 
+#  geom_point(data = trainACC,aes(x = x_axis,y = as.numeric(metric)),size = 10) +
+  facet_wrap(~Modality) +
+  ggtitle("Classification of Lowest Income (Levels 1-5): Accuracy") + 
+  labs(x = "Comparison Income Group",y = "Accuracy")
+
+
+}
+```
+
+```{r,echo = FALSE}
+el_sum_table = merge(el_tables[["brain-only"]][[1]],el_tables[["brain-only"]][[2]], by = c("x_axis","Modality"))
+colnames(el_sum_table)[3:6] = c("AUC_Ex","AUC_Ex_Train","Accuracy_Ex","Accuracy_Ex_Train")
+temp = merge(el_tables[["demo"]][[1]],el_tables[["demo"]][[2]], by = c("x_axis","Modality"))
+colnames(temp)[3:6] = c("AUC_In","AUC_In_Train","Accuracy_In","Accuracy_In_Train")
+el_sum_table = merge(temp,el_sum_table,by = c("x_axis","Modality"))
+
+el_sum_table$x_axis = ordered(el_sum_table$x_axis, levels = c("Top 10-20% (Level 10)","Above Median (Level 9)","Median (Level 8)","Below Median (Level 6-7)"))
+
+
+el_sum_table = tibble(el_sum_table)
+colnames(el_sum_table)[1] = c("Comparison Income Group")
+#el_sum_table = dplyr::group_by(el_sum_table,`Comparison Income Group`)
+el_sum_table[,3:10] = lapply(el_sum_table[,3:10],as.numeric)
+el_sum_table[,3:10] = lapply(el_sum_table[,3:10],round,3)
+el_sum_table = el_sum_table %>%
+  dplyr::arrange(
+    factor(`Comparison Income Group`, levels = c("Top 10-20% (Level 10)", "Above Median (Level 9)", "Median (Level 8)", "Below Median (Level 6-7)")),
+    factor(Modality, c("Structural","Functional","DTI","Multimodal"))
+  )
+#el_sum_table$Modality = ordered(el_sum_table$Modality, levels = #c("Structural","Functional","DTI","Multimodal"))
+#el_sum_table = el_sum_table [,c("Comparison Income Group","Modality",
+  #                              "Accuracy_Ex","AUC_Ex",
+   #                             "Accuracy_In","AUC_In")]
+
+levels(el_sum_table$Modality) = c("sMRI", "RSFC", "DTI", "Multimodal")
+performance_p_vals_gran = NULL
+models = list(income_models_2_el_10,income_models_2_el_9,income_models_2_el_8,income_models_2_el_7)
+
+for (model in models) {
+  for(c in names(income_models_2)){
+    
+      
+      performance_p_vals_gran = c(performance_p_vals_gran,performance_t_test(model,c,"Multimodal"))
+      
+    
+  }
+}
+
+
+
+
+
+# gt(el_sum_table) %>%
+#   # Tab spanners for Train under Ex. and In. Demographics
+#   tab_spanner(
+#     label = "Train",
+#     columns = contains("Ex_T"),
+#     id = "Ex.Demographics_Train"
+#   ) %>%
+#   tab_spanner(
+#     label = "Train",
+#     columns = contains("In_T"),
+#     id = "In.Demographics_Train"
+#   ) %>%
+#   # Tab spanners for Test under Ex. and In. Demographics
+#   tab_spanner(
+#     label = "Test",
+#     columns = c("Accuracy_Ex", "AUC_Ex"),
+#     id = "Ex.Demographics_Test"
+#   ) %>%
+#   tab_spanner(
+#     label = "Test",
+#     columns = c("Accuracy_In", "AUC_In"),
+#     id = "In.Demographics_Test"
+#   ) %>%
+#   # Outer spanners, with Ex. Demographics appearing before In. Demographics
+#   tab_spanner(
+#     label = "Brain Features Only",
+#     spanner = c("Ex.Demographics_Train", "Ex.Demographics_Test")
+#   ) %>%
+#   tab_spanner(
+#     label = "Brain Features with Demographics",
+#     spanner = c("In.Demographics_Train", "In.Demographics_Test")
+#   ) %>%
+#   # Ensure Ex. Demographics columns come before In. Demographics columns
+#   cols_move(
+#     columns = c("Accuracy_Ex", "AUC_Ex", "Accuracy_Ex_Train", "AUC_Ex_Train"),
+#     after = "Accuracy_In"
+#   ) %>%
+#   cols_move(
+#     columns = c("Accuracy_In", "AUC_In", "Accuracy_In_Train", "AUC_In_Train"),
+#     after = "AUC_Ex_Train"
+#   ) %>%
+#   # Rename column labels
+#   cols_label(
+#     Accuracy_Ex = "Accuracy",
+#     AUC_Ex = "AUC",
+#     Accuracy_Ex_Train = "Accuracy",
+#     AUC_Ex_Train = "AUC",
+#     Accuracy_In = "Accuracy",
+#     AUC_In = "AUC",
+#     Accuracy_In_Train = "Accuracy",
+#     AUC_In_Train = "AUC"
+#   ) %>%
+#   # Set row group order
+#   row_group_order(groups = c("Top 10-20% (Level 10)", "Above Median (Level 9)", "Median (Level 8)", "Below Median (Level 6-7)"))
+el_sum_table_multi = subset(el_sum_table,Modality == "Multimodal")
+# Custom p-value formatter
+format_p <- function(p) {
+  ifelse(p < 0.001, "< 0.001", format(round(p, 3), nsmall = 3))
+}
+
+# Ensure AUC columns are character type
+el_sum_table_multi$AUC_Ex_Train <- as.character(el_sum_table_multi$AUC_Ex_Train)
+el_sum_table_multi$AUC_In_Train <- as.character(el_sum_table_multi$AUC_In_Train)
+
+# Add formatted p-values (with <0.001 handling)
+el_sum_table_multi[1:4, "AUC_Ex_Train"] <- paste0(
+  unlist(el_sum_table_multi[1:4, "AUC_Ex_Train"]),
+  " (", format_p(performance_p_vals_gran[1:4]), ")"
+)
+
+el_sum_table_multi[1:4, "AUC_In_Train"] <- paste0(
+  unlist(el_sum_table_multi[1:4, "AUC_In_Train"]),
+  " (", format_p(performance_p_vals_gran[5:8]), ")"
+)
+
+
+#combined_performance_tab[1:4,"AUC_In_T"] = gsub("\\( ","(",paste(combined_performance_tab[1:4,"AUC_In_T"],"(",prettyNum(performance_p_vals_gran[5:8]),")"))
+#combined_performance_tab[1:4,"AUC_In_T"] =  gsub(" \\)",")",combined_performance_tab[1:4,"AUC_In_T"])
+
+gt(el_sum_table_multi) %>%
+  cols_hide(contains(c("Accuracy","Modality"))) %>%
+  cols_move_to_end(contains("Train")) %>% 
+  tab_spanner(
+     columns = c("AUC_Ex","AUC_In"),
+     label = "Test"
+  ) %>%
+  tab_spanner(
+     columns = contains("Train"),
+     label = "Train"
+  ) %>%
+  cols_move(
+    columns = "AUC_In_Train",
+    after = "AUC_Ex_Train"
+  )  %>%
+  cols_label(
+    AUC_In = "Brain Features with Demographics AUC",
+    AUC_Ex = "Brain Features Only AUC",
+    AUC_In_Train = "Brain Features with Demographics AUC (p)",
+    AUC_Ex_Train = "Brain Features Only AUC (p)"
+  ) %>%
+  cols_align("center")
+
+
+```
+The performance metrics presented in this table reflect the the performance of models that classified the Top 10-20% (Level 10), Above Median (Level 9), Median (Level 8), Below Median (Levels 6-7) classes individually against the bottom 10-20% (Levels 1-5). Neural features were derived from the ABCD Study dataset (Data Release 5.1) for neuroanatomy (sMRI), resting-state connectivity (RSFC), and white-matter microstructure (DTI). Multimodal models combined all features.
+
+
+sMRI: Structural MRI, RSFC: Resting-state functional connectivity, DTI: Diffusion Tensor Imaging, AUC: Area Under the Curve.
+
+\pagebreak
+
+# Table 4: Sex-Specific Prediction Using Best-Performing Models
+
+```{r,echo = FALSE}
+
+
+income_sex_table = as_tibble(income_sex_table) 
+income_sex_table = income_sex_table[,c("Sex","Modality","Accuracy","AUC","Accuracy_Demo","AUC_Demo")]
+income_sex_table_10 = income_sex_table_10[,c("Accuracy","AUC","Accuracy_Demo","AUC_Demo")]
+coi_sex_table_2 = coi_sex_table[,c("Accuracy","AUC","Accuracy_Demo","AUC_Demo")]
+
+sex_table = cbind(income_sex_table,coi_sex_table_2,income_sex_table_10)
+colnames(sex_table) = c("Sex","Modality",
+                         "Accuracy","AUC","Accuracy_Demo","AUC_Demo",
+                         "Accuracy_coi","AUC_coi","Accuracy_Demo_coi","AUC_Demo_coi",
+                         "Accuracy_10","AUC_10","Accuracy_Demo_10","AUC_Demo_10")
+
+sex_table_demo = sex_table[,c("Sex","Modality",
+                             "Accuracy_Demo","AUC_Demo",
+                             "Accuracy_Demo_10","AUC_Demo_10",
+                             "Accuracy_Demo_coi","AUC_Demo_coi")]
+
+sex_table_no_demo = sex_table[,c("Sex","Modality",
+                                 "Accuracy","AUC",
+                                 "Accuracy_10","AUC_10",
+                                 "Accuracy_coi","AUC_coi")]
+
+sex_table_no_demo %>% group_by(Sex) %>% gt() %>% 
+              tab_spanner(columns = 3:4,label = "2 Class - High vs. Low") %>% 
+              tab_spanner(columns = 5:6,label = "Bot. 10-20%-Top 10-20%") %>% 
+              tab_spanner(columns = 3:6,label = "Income") %>%
+              tab_spanner(columns = 7:8,label = "High vs. Low") %>% 
+              tab_spanner(columns = 7:8,label = "COI") %>% 
+              cols_label(AUC_coi = "AUC",Accuracy_coi= "Accuracy",
+                         AUC_10 = "AUC",Accuracy_10= "Accuracy") %>%
+              cols_hide(contains("Accuracy")) %>% 
+              cols_align("center")
+sex_table_demo %>% group_by(Sex) %>% gt() %>% 
+              tab_spanner(columns = 3:4,label = "Above/Below Median") %>% 
+              tab_spanner(columns = 5:6,label = "Top/Bottom 10-20%") %>% 
+              tab_spanner(columns = 3:6,label = "Income") %>%
+              tab_spanner(columns = 7:8,label = "High/Low") %>% 
+              tab_spanner(columns = 7:8,label = "COI") %>% 
+              cols_label(AUC_Demo = "AUC",Accuracy_Demo= "Accuracy",
+                         AUC_Demo_coi = "AUC",Accuracy_Demo_coi= "Accuracy",
+                         AUC_Demo_10 = "AUC",Accuracy_Demo_10= "Accuracy") %>%
+              cols_hide(contains("Accuracy")) %>% 
+              cols_align("center")
+                            
+
+
+```
+The best performing models dichotomous median income, granular dichotomous bottom and top 10-20% , and COI) were used to predict the respective social markers of males and females individually. Neural features were derived from the ABCD Study dataset (Data Release 5.1) for neuroanatomy (sMRI), resting-state connectivity (RSFC), and white-matter microstructure (DTI). Multimodal models combined all features.
+
+sMRI: Structural MRI, RSFC: Resting-state functional connectivity, DTI: Diffusion Tensor Imaging, AUC: Area Under the Curve.
+
+# Table 5: Neurocognitive and Behavioral Differences 
+```{r, echo = FALSE,warning=FALSE,message=FALSE}
+
+levels(t_test_table$Level) = c("Bottom 10-20% (Income Levels 1-5) | Below Median (Income Levels 6-7)",
+                               "Bottom 10-20% (Income Levels 1-5) | Median (Income Level 8)",
+                               "Bottom 10-20% (Income Levels 1-5) | Above Median (Income Level 9)",
+                               "Bottom 10-20% (Income Levels 1-5) | Top 10-20% (Income Level 10)",
+                               "Below Median (Income Levels 1-7) | Median and Above (Income Levels 8-10)",
+                               "Area Deprivation Index (Low/High)",
+                               "Child Opportunity Index (Low/High)")
+
+
+#t_test_table$Assessment = NA
+#t_test_table$Assessment[1:42] = "NIH Toolbox"
+#t_test_table$Assessment[43:56] = "Other Neurocognitive Measures"
+#t_test_table$Assessment[57:77] = "CBCL Problems Scale"
+t_test_table %>%
+  filter(Level %in% c("Child Opportunity Index (Low/High)",
+                      "Area Deprivation Index (Low/High)",
+                      "Below Median (Income Levels 1-7) | Median and Above (Income Levels 8-10)",
+                      "Bottom 10-20% (Income Levels 1-5) | Top 10-20% (Income Level 10)")) %>%
+  mutate(
+    p_unadjusted = ifelse(as.numeric(p_unadjusted) < 0.001, "< 0.001", round(as.numeric(p_unadjusted), 3)),
+    p_adjusted   = ifelse(as.numeric(p_adjusted)   < 0.001, "< 0.001", round(as.numeric(p_adjusted), 3))
+  ) %>% group_by(Level) %>%
+  gt()
+
+
+
+#row_group_order(groups = c("Child Opportunity Index (Above/Below Mean)",
+# "Below Median (Income Levels 1-7), Median and Above (Income Levels 8-10)",
+# "Bottom 10-20% (Income Levels 1-5), Top 10-20% (Income Level 10)"))
+
+
+
+```
+
+\pagebreak
+
+
+# Figure 2: Model Performance
+
+```{r echo=FALSE, fig.height=50, fig.width=90, message=FALSE, warning=FALSE}
+
+
+
+tsize = 100
+#income_sum_table_merged = rbind(income_sum_table_2, income_sum_table_3)
+sum_table_merged = rbind(income_sum_table_2,adi_model_table, coi_model_table)
+sum_table_merged$Class = as.factor(sum_table_merged$Class)
+levels(sum_table_merged$Class) = c("ADI","COI","Income")
+# Prepare data_long for Income plots
+data_long <- sum_table_merged %>%
+  pivot_longer(
+    cols = c(Accuracy_Ex, Accuracy_In),
+    names_to = "Demographics",
+    values_to = "Accuracy"
+  ) 
+
+pp_acc =
+  ggplot(data = data_long, aes(x = Modality, y = Accuracy, group = Class, alpha = Demographics, fill = Class)) + 
+  geom_bar(stat = "identity", position = "dodge", width = 0.5) +
+  scale_alpha_manual(
+    values = c("Accuracy_Ex" = 1, "Accuracy_In" = 0.3),
+    labels = c("Brain Features Only", "Brain Features with Demographics"),
+    name = "Feature Set"
+  ) + 
+  scale_fill_manual(
+    values = c("pink","lightblue","darkgreen"),
+    name = "SES Variable"
+  ) + 
+  theme_classic() +
+  labs(y = "Accuracy", x = "Modality") +
+  theme(
+    plot.title = element_text(size = tsize-10, face = "plain", hjust = 0.5), 
+    axis.title = element_text(size = tsize - 5), 
+    axis.text = element_text(size = tsize - 10), 
+    legend.text = element_text(size = tsize - 15),
+    legend.title = element_text(size = tsize - 10),
+    legend.key.size = unit(1, "inches")
+  ) + 
+  scale_y_continuous(breaks = seq(0, 1, 0.1)) 
+
+#income_sum_table_merged = rbind(income_sum_table_2, income_sum_table_3)
+sum_table_merged = rbind(income_sum_table_2,adi_model_table, coi_model_table)
+sum_table_merged$Class = as.factor(sum_table_merged$Class)
+levels(sum_table_merged$Class) = c("ADI","COI","Income")
+# Prepare data_long for Income plots
+data_long <- sum_table_merged %>%
+  pivot_longer(
+    cols = c(AUC_Ex, AUC_In),
+    names_to = "Demographics",
+    values_to = "AUC"
+  ) 
+
+pp_auc =
+  ggplot(data = data_long, aes(x = Modality, y = AUC, group = Class, alpha = Demographics, fill = Class)) + 
+  geom_bar(stat = "identity", position = "dodge", width = 0.5) +
+  scale_alpha_manual(
+    values = c("AUC_Ex" = 1, "AUC_In" = 0.3),
+    labels = c("Brain Features Only", "Brain Features with Demographics"),
+    name = "Feature Set"
+  ) + 
+  scale_fill_manual(
+    values = c("lightblue","turquoise","darkgreen"),
+    name = "SES Variable"
+  ) + 
+  theme_classic() +
+  labs(y = "AUC", x = "Modality") +
+  geom_hline(aes(yintercept = 0.5),linewidth = 10,linetype = "dotted",color = "red") + 
+  theme(
+    plot.title = element_text(size = tsize-10, face = "plain", hjust = 0.5), 
+    axis.title = element_text(size = tsize - 5), 
+    axis.text = element_text(size = tsize - 10), 
+    legend.text = element_text(size = tsize),
+    legend.title = element_text(size = tsize),
+    legend.key.size = unit(1, "inches")
+  ) + 
+  scale_y_continuous(breaks = seq(0, 1, 0.1)) 
+pp_2 = pp_acc/pp_auc
+
+
+
+plot_output = pp_auc
+
+plot_output + plot_annotation(title = "A. Model Performance Across Brain Imaging Modalities and Socioeconomic Variables",
+                            theme = theme(plot.title = element_text(size = tsize + 20 ,face = "bold"))) 
+
+#+ plot_annotation(title = "Model Performane",
+  #                           theme = theme(plot.title = element_text(size = tsize,face = "bold")))
+
+
+
+```
+
+```{r, echo = FALSE,fig.width = 75,fig.height = 65}
+
+tsize = 100
+levels(el_sum_table$Modality) = c("sMRI","RSFC","DTI","Multimodal")
+el_plot1 =
+ggplot(data = el_sum_table, aes(x = `Comparison Income Group`, group = Modality)) +
+  geom_line(aes(y = AUC_In,color = "Brain with Demographics"),linewidth = 12) +
+  geom_line(aes(y = AUC_Ex,color = "Brain Only"),linewidth = 12) +
+  geom_point(aes(y = AUC_In),size = 24) +
+  geom_point(aes(y = AUC_Ex),size = 24) +
+  facet_wrap(~Modality) +
+  scale_color_manual(values = c("darkgreen","green3"),name = "Feature Set") + 
+  labs(x = "Comparison Income Group",y = "AUC") +
+  labs(title = "Accuracy") +
+  theme_classic() &
+ theme(
+    plot.title = element_text(size = tsize-10),
+    axis.text = element_text(size = tsize - 15),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1), # Rotate x-axis text
+    axis.title = element_text(size = tsize - 15),
+    strip.text = element_text(size = tsize - 15),
+    legend.text = element_text(size = tsize - 5),
+    legend.title = element_text(size = tsize),
+    legend.key.size = unit(1, "inches") 
+  ) 
+
+el_plot2 = 
+ggplot(data = el_sum_table, aes(x = `Comparison Income Group`, group = Modality)) +
+  geom_line(aes(y = Accuracy_In,color = "Brain with Demographics"),linewidth = 12) +
+  geom_line(aes(y = Accuracy_Ex,color = "Brain Only"),linewidth = 12) +
+  geom_point(aes(y = Accuracy_In),size = 24) +
+  geom_point(aes(y = Accuracy_Ex),size = 24) +
+  facet_wrap(~Modality) +
+  scale_color_manual(values = c("darkgreen","green3"),name = "Feature Set") +
+  labs(x = "Comparison Income Group",y = "Accuracy") +
+  theme_classic() &
+ theme(
+    plot.title = element_text(size = tsize-10),
+    axis.text = element_text(size = tsize - 15),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1), # Rotate x-axis text
+    axis.title = element_text(size = tsize - 15),
+    strip.text = element_text(size = tsize - 15),
+    legend.text = element_text(size = tsize - 5),
+    legend.title = element_text(size = tsize),
+    legend.key.size = unit(1, "inches")
+  ) 
+
+el_plot_multimodal_only = 
+ggplot(data = el_sum_table[Modality == "Multimodal",], aes(x = `Comparison Income Group`,y = AUC_In)) +
+  geom_line(aes(y = AUC_Ex, group = 1,color = "Brain Features Only"),linewidth = 12) +
+  geom_line(aes(y = AUC_In,group = 1,color = "Brain Features with Demographics"),linewidth = 12) +
+  geom_point(aes(y = AUC_In),size = 24) + 
+  geom_point(aes(y = AUC_Ex),size = 24) + 
+  geom_hline(aes(yintercept = 0.752,color = "Primary Brain Features Only Model"),linewidth = 12) +
+  geom_hline(aes(yintercept = 0.781,color = "Primary Brain Features with Demographics Model"),linewidth = 12) +
+  scale_color_manual(values = c("darkgreen","green3","red4","red"),name = "Feature Set") +
+  labs(x = "Comparison Income Group",y = "Accuracy") +
+  theme_classic() &
+ theme(
+    plot.title = element_text(size = tsize-10),
+    axis.text = element_text(size = tsize - 15),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1), # Rotate x-axis text
+    axis.title = element_text(size = tsize - 10),
+    strip.text = element_text(size = tsize - 10),
+    legend.text = element_text(size = tsize),
+    legend.title = element_text(size = tsize),
+    legend.key.size = unit(1, "inches")
+  ) 
+
+plot_output = el_plot2/el_plot1 
+plot_output = el_plot1 
+plot_output = el_plot_multimodal_only
+plot_output +plot_annotation(title = "B. Comparison of Model Performance Classifying Bottom 10-20% ",
+                              theme = theme(plot.title = element_text(size = tsize + 7.5,face = "bold"))) 
+
+
+```
+Performance metrics (Accuracy and AUC) for all models: combined family income split by median income level and neighborhood disadvantage indices (A) and granular family income models with the bottom 10-20% of the income distribution (Levels 1-5) as the reference class (B). 
+
+COI: Child Opportunity Index; ADI: Area Deprivation Index; AUC: Area Under the Curve;
+
+\pagebreak
+
+# Figure 3: Primary Model Variable Importance 
+```{r,echo = FALSE,warning = FALSE,message=FALSE}
+
+library(dplyr)
+library(tidyr)
+library(caret)
+library(ggplot2)
+library(ggrepel)
+
+plot_combined_vi <- function(model_list,color, modalities) {
+  
+  # Initialize combined_vi with the first modality
+  first_mod <- modalities[1]
+  vi1 <- varImp(model_list[["brain-only"]][[first_mod]]$eln, scale = FALSE)$importance
+  vi2 <- varImp(model_list[["demo"]][[first_mod]]$eln, scale = FALSE)$importance
+  vi1$Feature <- rownames(vi1)
+  vi2$Feature <- rownames(vi2)
+  
+  combined_vi <- full_join(vi1, vi2, by = "Feature", suffix = c(".brain", ".demo")) %>%
+    mutate(
+      Overall.brain = ifelse(is.na(Overall.brain), 0, Overall.brain),
+      Overall.demo  = ifelse(is.na(Overall.demo), 0, Overall.demo),
+      Combined = Overall.brain + Overall.demo
+    ) %>%
+    dplyr::select(Feature, Combined) %>%
+    rename(!!paste0("Combined_", first_mod) := Combined)
+  
+  # Loop through remaining modalities
+  for (modality in modalities[-1]) {
+    vi1 <- varImp(model_list[["brain-only"]][[modality]]$eln, scale = FALSE)$importance
+    vi2 <- varImp(model_list[["demo"]][[modality]]$eln, scale = FALSE)$importance
+    vi1$Feature <- rownames(vi1)
+    vi2$Feature <- rownames(vi2)
+    
+    vi_combined <- full_join(vi1, vi2, by = "Feature", suffix = c(".brain", ".demo")) %>%
+      mutate(
+        Overall.brain = ifelse(is.na(Overall.brain), 0, Overall.brain),
+        Overall.demo  = ifelse(is.na(Overall.demo), 0, Overall.demo),
+        Combined = Overall.brain + Overall.demo
+      ) %>%
+      dplyr::select(Feature, Combined)
+    
+    combined_vi <- full_join(combined_vi, vi_combined, by = "Feature") %>%
+      rename_with(~ paste0("Combined_", modality), .cols = "Combined")
+  }
+  
+ 
+  combined_vi[is.na(combined_vi)] <- 0
+  combined_vi <- combined_vi %>%
+    mutate(Total_Combined = rowSums(across(starts_with("Combined"))))
+  
+  combined_vi$Modality <- case_when(
+    grepl("to ", combined_vi$Feature) ~ "RSFC",
+    grepl("Volume|Area|Thickness|Sulcal", combined_vi$Feature) ~ "sMRI",
+    grepl("Fiber TV|FA|Diff", combined_vi$Feature) ~ "DTI",
+    TRUE ~ "Demographics"
+  )
+  
+   combined_vi$`Region and Circuitry` =  ordered(case_when(grepl("front|Front|Cingulo-Opercular|Fronto-Parietal|striatal|Long|Putamen|Cingulo|Pars", combined_vi$Feature) ~ "Fronto- Circuitry",
+                                                     grepl("Lateral Occipital|Inferior Parietal|Superior Temporal|Default", combined_vi$Feature) ~ "TPJ/TPO",
+    grepl("Hemisphere|Corpus|Whole|Cerebral", combined_vi$Feature) ~ "Global",
+    TRUE ~ "Other"
+  ),levels = c("Fronto- Circuitry","TPJ/TPO","Global","Other"))
+  
+  top_features <- combined_vi %>% filter(Modality != "Demographics") %>%
+    dplyr::select(Feature,Total_Combined,Modality) %>%
+    #pivot_longer(-Feature, names_to = "Modality", values_to = "Importance") %>%
+    group_by(Modality) %>%
+    slice_max(Total_Combined, n = 5, with_ties = TRUE) %>%
+    ungroup() %>%
+    distinct(Feature)
+  
+  # Filter to top features
+  combined_vi_top <- combined_vi %>%
+    filter(Feature %in% top_features$Feature)
+  
+ 
+  
+  
+  combined_vi_top$Modality <- ordered(combined_vi_top$Modality, levels = c("sMRI", "RSFC", "DTI", "Demographics"))
+  
+ combined_vi_top =  combined_vi_top %>% filter(Modality != "Demographics")
+ combined_vi_top$Feature = gsub("`","",combined_vi_top$Feature)
+  # Plot
+  p <- ggplot(combined_vi_top, aes(x = Modality, y = Total_Combined,color = `Region and Circuitry`)) +
+    geom_text_repel(aes(label = Feature), max.overlaps = Inf, size = 15,fontface = "bold") +
+    theme_minimal(base_size = 13) +
+    labs(
+      x = "Modality",
+      y = "Summed Absolute Beta"
+    ) +
+    scale_size_continuous(name = "Summed Absolute Beta") + scale_color_manual(
+    name = "Region and Circuitry",  # Optional: sets the legend title
+    values = c(
+      "Fronto- Circuitry" = "turquoise3",
+      "TPJ/TPO" = "orange2",
+      "Global" = "brown2",
+      "Other" = "black"
+    )
+  )
+  
+  return(p)
+}
+
+
+
+```
+```{r fig.height=39, fig.width=50,echo=FALSE,warning=FALSE,message=FALSE}
+
+set.seed(444)
+
+tsize = 45
+Income_VI = plot_combined_vi(income_models_2,color = "darkolivegreen",modalities = c("Multimodal", "Structural", "Functional", "DTI")) + ggtitle("A. Combined Family Income")
+ADI_VI = plot_combined_vi(adi_models,"lightblue4",c("Multimodal", "Structural", "Functional", "DTI")) + ggtitle("B. Area Deprivation Index (ADI)")
+COI_VI = plot_combined_vi(coi_models,"pink4",modalities = c("Multimodal", "Structural", "Functional", "DTI")) + ggtitle("C. Child Opportunity Index (COI)") 
+Income_VI/ADI_VI/COI_VI + plot_layout(guides = "collect") & 
+                theme(plot.title = element_text(size = tsize,face = "bold"), axis.text = element_text(size = tsize), 
+                      axis.title = element_text(size = tsize),legend.text = element_text(size = tsize),
+                      legend.key.size = unit(0.5,"inches"),legend.title = element_text(size = tsize))
+
+
+
+#ggsave("VI_Combined_2Lev.png",VI_Combined_2Lev,height = 40,width = 30, dpi = 500)
+```
+Neural Features found to be within the top 10 of all features in both the iteration of the primary models without demographics and with demographics for Income (A), ADI (B), COI (C). Variable Importance for each model was scaled and so the most important feature has 100% 
+
+STS: Superior Temporal Sulcus; Fiber TV: Fiber Tract Volume; FA: Fractional Anisotropy; Diff: Diffusivity; lh: Left Hemisphere; rh: Right Hemisphere; ex. CC: excluding Corpus Callosum; Tot: Total; Hemi: Hemisphere; Sup: Superior; Avg: Average;Fasc: Fasciculus; Long: Longitudinal;SM:Sensorimotor.
+
+\pagebreak
+
+# Figure 4:
+```{r, echo = FALSE}
+
+modality_feature_total = function(model_list,color){
+
+modalities = c("Multimodal", "Structural", "Functional", "DTI")
+# Initialize combined_vi with the first modality
+first_mod <- modalities[1]
+vi1 <- varImp(model_list[["brain-only"]][[first_mod]]$eln, scale = FALSE)$importance
+vi2 <- varImp(model_list[["demo"]][[first_mod]]$eln, scale = FALSE)$importance
+vi1$Feature <- rownames(vi1)
+vi2$Feature <- rownames(vi2)
+
+combined_vi <- full_join(vi1, vi2, by = "Feature", suffix = c(".brain", ".demo")) %>%
+  mutate(
+    Overall.brain = ifelse(is.na(Overall.brain), 0, Overall.brain),
+    Overall.demo  = ifelse(is.na(Overall.demo), 0, Overall.demo),
+    Combined = Overall.brain + Overall.demo
+  ) %>%
+  dplyr::select(Feature, Combined) %>%
+  rename(!!paste0("Combined_", first_mod) := Combined)
+
+# Loop through remaining modalities
+for (modality in modalities[-1]) {
+  vi1 <- varImp(model_list[["brain-only"]][[modality]]$eln, scale = FALSE)$importance
+  vi2 <- varImp(model_list[["demo"]][[modality]]$eln, scale = FALSE)$importance
+  vi1$Feature <- rownames(vi1)
+  vi2$Feature <- rownames(vi2)
+  
+  vi_combined <- full_join(vi1, vi2, by = "Feature", suffix = c(".brain", ".demo")) %>%
+    mutate(
+      Overall.brain = ifelse(is.na(Overall.brain), 0, Overall.brain),
+      Overall.demo  = ifelse(is.na(Overall.demo), 0, Overall.demo),
+      Combined = Overall.brain + Overall.demo
+    ) %>%
+    dplyr::select(Feature, Combined)
+  
+  combined_vi <- full_join(combined_vi, vi_combined, by = "Feature") %>%
+    rename_with(~ paste0("Combined_", modality), .cols = "Combined")
+}
+
+
+combined_vi[is.na(combined_vi)] <- 0
+combined_vi <- combined_vi %>%
+  mutate(Total_Combined = rowSums(across(starts_with("Combined"))))
+
+combined_vi$Modality <- case_when(
+  grepl("to ", combined_vi$Feature) ~ "RSFC",
+  grepl("Volume|Area|Thickness|Sulcal", combined_vi$Feature) ~ "sMRI",
+  grepl("Fiber TV|FA|Diff", combined_vi$Feature) ~ "DTI",
+  TRUE ~ "Demographics"
+)
+
+
+
+
+plot_data_modality_importance = combined_vi %>% group_by(Modality) %>% summarise("Modality Absolute Beta Sum" = sum(Total_Combined),"Total Number of Features" = n())
+plot_data_modality_importance$`Average Beta Weight` = plot_data_modality_importance$`Modality Absolute Beta Sum`/plot_data_modality_importance$`Total Number of Features`
+plot_data_modality_importance = plot_data_modality_importance %>% filter(Modality != "Demographics")
+ggplot(aes(x = Modality,y =`Modality Absolute Beta Sum`),data = plot_data_modality_importance) + 
+  geom_bar(stat = "identity",fill = color) + 
+  scale_x_discrete(limits = rev) + 
+  theme_classic() 
+
+}
+measure_weight = function(model_list,modalities,color){
+# Initialize combined_vi with the first modality
+first_mod <- modalities[1]
+vi1 <- varImp(model_list[["brain-only"]][[first_mod]]$eln, scale = FALSE)$importance
+vi2 <- varImp(model_list[["demo"]][[first_mod]]$eln, scale = FALSE)$importance
+vi1$Feature <- rownames(vi1)
+vi2$Feature <- rownames(vi2)
+
+combined_vi <- full_join(vi1, vi2, by = "Feature", suffix = c(".brain", ".demo")) %>%
+  mutate(
+    Overall.brain = ifelse(is.na(Overall.brain), 0, Overall.brain),
+    Overall.demo  = ifelse(is.na(Overall.demo), 0, Overall.demo),
+    Combined = Overall.brain + Overall.demo
+  ) %>%
+  dplyr::select(Feature, Combined) %>%
+  rename(!!paste0("Combined_", first_mod) := Combined)
+
+# Loop through remaining modalities
+for (modality in modalities[-1]) {
+  vi1 <- varImp(model_list[["brain-only"]][[modality]]$eln, scale = FALSE)$importance
+  vi2 <- varImp(model_list[["demo"]][[modality]]$eln, scale = FALSE)$importance
+  vi1$Feature <- rownames(vi1)
+  vi2$Feature <- rownames(vi2)
+  
+  vi_combined <- full_join(vi1, vi2, by = "Feature", suffix = c(".brain", ".demo")) %>%
+    mutate(
+      Overall.brain = ifelse(is.na(Overall.brain), 0, Overall.brain),
+      Overall.demo  = ifelse(is.na(Overall.demo), 0, Overall.demo),
+      Combined = Overall.brain + Overall.demo
+    ) %>%
+    dplyr::select(Feature, Combined)
+  
+  combined_vi <- full_join(combined_vi, vi_combined, by = "Feature") %>%
+    rename_with(~ paste0("Combined_", modality), .cols = "Combined")
+}
+
+
+combined_vi[is.na(combined_vi)] <- 0
+combined_vi <- combined_vi %>%
+  mutate(Total_Combined = rowSums(across(starts_with("Combined"))))
+
+combined_vi$Measure <- case_when(
+  grepl("to ", combined_vi$Feature) ~ "RSFC",
+  grepl("Volume", combined_vi$Feature) ~ "GMV",
+  grepl("Area", combined_vi$Feature) ~ "CSA",
+  grepl("Thickness", combined_vi$Feature) ~ "CT",
+  grepl("Sulcal", combined_vi$Feature) ~ "SD",
+  grepl("Fiber TV", combined_vi$Feature) ~ "FTV",
+  grepl("FA", combined_vi$Feature) ~ "FA",
+  grepl("Diff", combined_vi$Feature) ~ "Diff",
+  TRUE ~ "Demographics"
+)
+
+
+plot_data_modality_importance = combined_vi %>% group_by(Measure) %>% summarise("Measure Absolute Beta Sum" = sum(Total_Combined),"Total Number of Features" = n())
+plot_data_modality_importance$`Average Beta Weight` = plot_data_modality_importance$`Measure Absolute Beta Sum`/plot_data_modality_importance$`Total Number of Features`
+plot_data_modality_importance = plot_data_modality_importance %>% filter(Measure != "Demographics")
+plot_data_modality_importance$Measure = ordered(plot_data_modality_importance$Measure,levels = c("CSA","CT","GMV","SD",
+                                                        "RSFC",
+                                                        "Diff","FTV","FA"
+                                                        ))
+
+plot_data_modality_importance$Measure = fct_rev(plot_data_modality_importance$Measure)
+
+ggplot(aes(x = Measure,y =`Measure Absolute Beta Sum`),data = plot_data_modality_importance) + 
+  geom_bar(stat = "identity",fill = color) + 
+  scale_x_discrete(limits = rev) + 
+  theme_classic() 
+
+}
+
+```
+```{r, echo = FALSE,fig.width = 45,fig.height=40}
+tsize = 55
+library(patchwork)
+
+# Create individual rows with titles
+row1 <- (modality_feature_total(adi_models, "lightblue") + ggtitle("Area Deprivation Index (ADI)") +
+         measure_weight(adi_models, c("Multimodal", "Structural", "Functional", "DTI"), "lightblue"))
+
+row2 <- (modality_feature_total(coi_models, "turquoise") + ggtitle("Child Opportunity Index (COI)") + 
+         measure_weight(coi_models, c("Multimodal", "Structural", "Functional", "DTI"), "turquoise")) 
+
+row3 <- (modality_feature_total(income_models_2, "darkgreen") +  ggtitle("Combined Family Income") + 
+         measure_weight(income_models_2, c("Multimodal", "Structural", "Functional", "DTI"), "darkgreen")) 
+
+# Combine all rows and apply shared theme
+final_plot <- (row1 / row2 / row3) & 
+  theme(
+    plot.title = element_text(size = tsize, face = "bold"),
+    axis.text = element_text(size = tsize - 10),
+    axis.title = element_text(size = tsize),
+    legend.text = element_text(size = tsize),
+    legend.key.size = unit(0.5, "inches"),
+    legend.title = element_text(size = tsize)
+  )
+
+# Print the final plot
+final_plot
+
+```
+# Figure 5: Seconday Model Variable Importance 
+```{r,echo = FALSE}
+granular_models = list("Top 10-20% (Level 10)" = list("brain-only" = income_models_2_el_10[["brain-only"]][["Multimodal"]],"demo" = income_models_2_el_10[["demo"]][["Multimodal"]]),
+                       "Above Median (Level 9)" = list("brain-only" = income_models_2_el_9[["brain-only"]][["Multimodal"]],"demo" =income_models_2_el_9[["demo"]][["Multimodal"]]),
+                       "Median (Level 8)" =  list("brain-only" = income_models_2_el_8[["brain-only"]][["Multimodal"]],"demo" =income_models_2_el_8[["demo"]][["Multimodal"]]),
+                       "Below Median (Levels 6-7)" = list("brain-only" = income_models_2_el_7[["brain-only"]][["Multimodal"]],"demo" =income_models_2_el_7[["demo"]][["Multimodal"]]))
+
+plot_vi_by_modality_for_income_group <- function(granular_models, income_level, top_n = 5) {
+  library(dplyr)
+  library(tidyr)
+  library(caret)
+  library(ggplot2)
+  library(ggrepel)
+  
+  # Helper: Extract importance for one income group
+  brain_model <- granular_models[[income_level]][["brain-only"]]$eln
+  demo_model  <- granular_models[[income_level]][["demo"]]$eln
+  
+  vi1 <- varImp(brain_model, scale = FALSE)$importance
+  vi2 <- varImp(demo_model,  scale = FALSE)$importance
+  vi1$Feature <- rownames(vi1)
+  vi2$Feature <- rownames(vi2)
+  
+  combined_vi <- full_join(vi1, vi2, by = "Feature", suffix = c(".brain", ".demo")) %>%
+    mutate(
+      Overall.brain = ifelse(is.na(Overall.brain), 0, Overall.brain),
+      Overall.demo  = ifelse(is.na(Overall.demo), 0, Overall.demo),
+      Total_Combined = Overall.brain + Overall.demo
+    ) %>%
+    dplyr::select(Feature, Total_Combined)
+  
+ combined_vi$`Region and Circuitry` =  ordered(case_when(grepl("front|Front|Cingulo-Opercular|Fronto-Parietal|Sup. Corticostriate|Long|Putamen|Pars|Forceps|Cingulo", combined_vi$Feature) ~ "Fronto- Circuitry",
+                                                     grepl("Lateral Occipital|Inferior Parietal|Superior Temporal|Default", combined_vi$Feature) ~ "TPJ/TPO",
+    grepl("Hemisphere|Corpus|Whole|Cerebral", combined_vi$Feature) ~ "Global",
+    TRUE ~ "Other"
+  ),levels = c("Fronto- Circuitry","TPJ/TPO","Global","Other"))
+  top_features <- combined_vi %>%
+    mutate(Modality = case_when(
+      grepl("to ", Feature) ~ "RSFC",
+      grepl("Volume|Area|Thickness|Sulcal", Feature) ~ "sMRI",
+      grepl("Fiber TV|FA|Diff", Feature) ~ "DTI",
+      TRUE ~ "Demographics"
+    )) %>%
+    mutate(Modality = factor(Modality, levels = c("sMRI", "RSFC", "DTI", "Demographics")))
+  
+  pan_labels = c("A.","B.","C.","D.")
+  
+  top_features <- top_features %>%
+    group_by(Modality) %>%
+    slice_max(Total_Combined, n = 5, with_ties = TRUE)
+  
+  top_features = top_features %>% filter(Modality != "Demographics")
+  top_features$Feature = gsub("`","",top_features$Feature)
+  
+  
+  #top_features$income_level = factor(top_features$income_level)
+  ggplot(top_features, aes(x = Modality, y = Total_Combined,color = `Region and Circuitry` )) +
+    geom_text_repel(aes(label = Feature), max.overlaps = Inf, size = 17, fontface = "bold") +
+    theme_minimal(base_size = 14) +
+    scale_size_continuous(name = "Summed Absolute Beta") +
+    labs(
+      title = paste(income_level),
+      x = "Modality",
+      y = "Summed Absolute Beta"
+    ) + scale_color_manual(
+   name = "Region and Circuitry",  
+    values = c(
+      "Fronto- Circuitry" = "turquoise3",
+      "TPJ/TPO"   = "orange2",
+      "Global"   = "brown2",
+      "Other" = "black"
+    )
+  )
+}
+
+```
+```{r, fig.height=65, fig.width=68,warning=FALSE,message=FALSE,echo=FALSE}
+
+library(patchwork)
+tsize = 60
+
+#y_max <- max(plot_data$Total_Combined, na.rm = TRUE)
+
+# Then generate each plot with the same y-axis
+p1 <- plot_vi_by_modality_for_income_group(granular_models, "Top 10-20% (Level 10)") + ggtitle("A. Top 10-20% (Level 10)")
+p2 <- plot_vi_by_modality_for_income_group(granular_models, "Above Median (Level 9)") + ggtitle("B. Above Median (Level 9)")
+p3 <- plot_vi_by_modality_for_income_group(granular_models, "Median (Level 8)") + ggtitle("C. Median (Level 8)")
+p4 <- plot_vi_by_modality_for_income_group(granular_models, "Below Median (Levels 6-7)") + ggtitle("D. Below Median (Levels 6-7)")
+
+# Combine with patchwork and collect the legend
+library(patchwork)
+library(ggplot2)
+
+# Combine the plots and share legend
+final_plot <- (p1 | p2) / (p3 | p4) & 
+  theme(
+    plot.title      = element_text(size = tsize, face = "bold"),
+    axis.text       = element_text(size = tsize),
+    axis.title      = element_text(size = tsize),
+    legend.text     = element_text(size = tsize),
+    legend.key.size = unit(0.5, "inches"),
+    legend.title    = element_text(size = tsize),
+    legend.position = "bottom" 
+  )
+
+# Display the plot
+final_plot
+
+
+
+```
+Most important variables for combined family income models classifying the top and bottom 10-20% for all imaging modalities and both excluding and including demographic information: Structural MRI, sMRI (A), Resting state functional connectivity, RSFC (B), Diffusion Tensor Imaging, DTI (C), Multimodal (D).
+
+STS: Superior Temporal Sulcus; Fiber TV: Fiber Tract Volume; FA: Fractional Anisotropy; Diff: Diffusivity; lh: Left Hemisphere; rh: Right Hemisphere; ex. CC: excluding Corpus Callosum; Tot: Total; Hemi: Hemisphere; Sup: Superior; Avg: Average;Fasc: Fasciculus; Long: Longitudinal;SM:Sensorimotor.
+
+
+
+
+# Figure 6
+
+Figure 6 will be the brain image highlighting important regions.
+
+\pagebreak
+
+
+\pagebreak
+
+# Table S1: Class Distribution by Model (Maybe)
+
+```{r,echo = FALSE}
+
+
+```
+
+
+\pagebreak
+
+
+
+
+```{r,echo = FALSE}
+
+New_VI_Plot_supplemental = function(model_set,color){
+  
+ 
+  combined_t = NULL
+ 
+  for(models in names(model_set[["brain-only"]])){
+  list_of_models = list(c(model_set[["brain-only"]][[models]]),
+                        c(model_set[["demo"]][[models]]))
+  
+  
+  t = tibble()
+  run = 0 
+  for (i in list_of_models){
+    if("Overall" %in% colnames(i[["Imp_Var"]][["importance"]]) == FALSE){
+      
+      colnames(i[["Imp_Var"]][["importance"]])[1] = "Overall"
+      i[["Imp_Var"]][["importance"]] =  i[["Imp_Var"]][["importance"]] %>% dplyr::select(Overall)
+      
+    }
+    
+    
+    
+    run = run + 1
+    a =cbind(i[["Imp_Var"]][["importance"]]%>% slice_max(Overall,n = 10,with_ties = FALSE) %>% filter(Overall != 0) %>% arrange(desc(Overall)),
+             i[["Imp_Var"]][["importance"]] %>% slice_max(Overall,n = 10,with_ties = FALSE) %>% filter(Overall != 0) %>% row.names())
+    a$Ranking = seq(1:nrow(a))
+    
+    if(run == 1){
+      a$Model = rep("Brain_Only",nrow(a))
+      
+    }
+    
+    if(run == 2){
+      a$Model = rep("Demographics",nrow(a))
+      
+    }
+    
+    t = rbind(t,a)
+    
+  }
+  row.names(t) = NULL
+  colnames(t) = c("Relative Importance","Feature","Ranking","Model")
+  #t$Feature <- gsub(".*\\((.*)\\).*", "\\1", t$Feature)
+  #t$Model = c(rep("Brain_Only",10),rep("Demographics",10))
+  
+  
+  
+  
+  t = t %>%
+    filter(str_detect(Feature, "\\b(rh|lh|Right|Left|to|T1|Contrast|FA|Diff|Area|Volume|Thickness|Fiber|Sulcal)\\b"))
+  
+  
+  t$Feature = gsub("left Hemisphere","Left hemisphere",t$Feature)
+  t$Feature = gsub("right Hemisphere","Right hemisphere",t$Feature)
+  
+  
+  
+  #t$Feature <- gsub("^rh-|^lh-| rh-| lh-|left-|right-", "", t$Feature)
+  #t$Feature <- gsub(".*orbitofrontal.*", "orbitofrontal", t$Feature)
+  #t$Feature <- gsub(".*cingulate.*", "cingulate", t$Feature)
+  #t$Feature <- gsub(".*occipital.*", "occipital", t$Feature)
+  t$Feature <- gsub(".*motion.*", "Mean Motion", t$Feature)
+  #t$Feature <- gsub("fronto-parietal", "frontoparietal", t$Feature)
+  #t$Feature <- gsub("cingulo-parietal", "cinguloparietal", t$Feature)
+  #t$Feature <- gsub("cingulo-opercular", "cinguloopercular", t$Feature)
+  
+  
+  
+  #t <- t %>% separate_rows(Feature, sep = "-")
+  
+  
+  t$adjusted = case_when(t$Feature %in% semi_join(split(t,t$Model)[[1]],split(t,t$Model)[[length(split(t,t$Model))]], by = c("Feature"))$Feature  ~ "Both",
+                         t$Model == "Demographics" ~ "In. Demographics",
+                         t$Model == "Brain_Only" ~  "Ex. Demographics")
+  
+  
+  
+  t = t %>% group_by(Feature) %>% summarise(`Average Ranking` = mean(Ranking),
+                                            `Average Importance` = as.numeric(mean(`Relative Importance`)), 
+                                            `Appearences in Top 10 across Models` = n(),
+                                            Model_Types = first(adjusted))
+  
+  
+  t$Model_Types = ordered(t$Model_Types,c("Ex. Demographics","In. Demographics","Both")) 
+  
+  t$Feature = gsub("`","",t$Feature)
+  t$Modality = models
+ combined_t = rbind(combined_t,t)
+  }
+  library(ggrepel)
+  
+  combined_t$Modality = factor(combined_t$Modality,levels =  c("Structural","Functional","DTI","Multimodal"))
+  levels(combined_t$Modality) = c("sMRI","RSFC","DTI","Multimodal")
+  combined_t = subset(combined_t,Model_Types == "In. Demographics")
+  plot = ggplot(data = combined_t,aes(y = `Average Importance`,x = Modality,label = Feature)) + 
+    geom_text_repel(size = 10,max.overlaps = 50,direction = "y",box.padding = 0.60,color = color,fontface = "bold") + labs(y = "Variable Importance") + theme_minimal() 
+  return(plot)
+}
+
+```
+
+```{r,echo = FALSE,fig.height=38, fig.width=39,warning=FALSE,message=FALSE}
+Income_VI_s = New_VI_Plot_supplemental(income_models_2,"darkolivegreen") + ggtitle("A. Combined Family Income")
+ADI_VI_s = New_VI_Plot_supplemental(adi_models,"lightblue4") + ggtitle("B. Area Deprivation Index (ADI)")
+COI_VI_s = New_VI_Plot_supplemental(coi_models,"pink4") + ggtitle("C. Child Opportunity Index (COI)") 
+Income_VI_s/ADI_VI_s/COI_VI_s & 
+                theme(plot.title = element_text(size = tsize-10,face = "bold"), axis.text = element_text(size = tsize-20), 
+                      axis.title = element_text(size = tsize-15),legend.text = element_text(size = tsize-20),
+                      legend.key.size = unit(0.5,"inches"),legend.title = element_text(size = tsize-15))
+
+
+
+```
