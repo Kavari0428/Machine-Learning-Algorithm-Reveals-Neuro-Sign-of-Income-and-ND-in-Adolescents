@@ -21,3 +21,5 @@ Figure/Table file creates figures and tables for publication.
    - Make sure working directory is set to Income_ND on your device. 
 
 Data from the ABCD Study is needed to complete the analyses.
+   - Data needed includes sMRI, rs-fMRI, and DTI along with demographic and motion data
+ 
