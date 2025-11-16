@@ -11,11 +11,13 @@ The code is split into three files for the sake of cohesion:
 
 Pre-analysis file contains code that reads in data and creates all functions used throughout the analyses including those needed for creating figures 
    - Data is not shared
-   - You should download and collate data into a folder titled "5.1 Release"
-   - Make sure working directory is changed to match where you have your files
+   - You should download and collate data into a folder titled "5.1 Release" inside of a folder named Income_ND
+   - Make sure working directory is set to Income_ND on your device. 
 
 Analysis file contains all execution of every analysis done for the manuscript
+   - Make sure working directory is set to Income_ND on your device. 
 
 Figure/Table file creates figures and tables for publication. 
+   - Make sure working directory is set to Income_ND on your device. 
 
 Data from the ABCD Study is needed to complete the analyses.
