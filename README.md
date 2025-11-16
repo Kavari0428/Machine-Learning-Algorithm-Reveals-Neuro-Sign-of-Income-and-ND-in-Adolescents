@@ -8,8 +8,11 @@ The code is split into three files for the sake of cohesion:
 2. Analysis
 3. Figures/Tables
 
-   
+
 Pre-analysis file contains code that reads in data and creates all functions used throughout the analyses including those needed for creating figures 
+   - Data is not shared
+   - You should download and collate data into a folder titled "5.1 Release"
+   - Make sure working directory is changed to match where you have your files
 
 Analysis file contains all execution of every analysis done for the manuscript
 
