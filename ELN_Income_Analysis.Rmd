@@ -1,0 +1,545 @@
+---
+title: "ELN_Base_Income_Analysis"
+output: html_document
+date: "2024-12-28"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r model execution 2 cats, echo = FALSE, include = FALSE,warning=FALSE}
+
+#2 cats
+Progress = 0
+income_models_2 = list()
+#folds = createFolds(baseline_datasets[[4]]$fam, k = 10)
+for(i in names(baseline_datasets)){
+Progress = Progress + 25
+income_models_2[["brain-only"]][[i]] = income_eln(1,7,NULL,NULL,8,10, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+income_models_2[["demo"]][[i]] = income_eln_demo(1,7,NULL,NULL,8,10, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+cat(" \n \n \n", Progress,"% Complete \n \n \n")
+}
+
+
+
+
+```
+
+
+```{r model execution 2 cats bottom 10-20, echo = FALSE, include = FALSE,warning=FALSE}
+
+income_models_2_el_10 = list()
+income_models_2_el_9 = list()
+income_models_2_el_8 = list()
+income_models_2_el_7 = list()
+
+for(i in names(baseline_datasets)){
+cat("\n \n \n",10,"\n \n \n")
+income_models_2_el_10[["brain-only"]][[i]] = income_eln(1,5,NULL,NULL,10,10, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+income_models_2_el_10[["demo"]][[i]] = income_eln_demo(1,5,NULL,NULL,10,10, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+
+cat("\n \n \n",9,"\n \n \n")
+income_models_2_el_9[["brain-only"]][[i]] = income_eln(1,5,NULL,NULL,9,9, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+income_models_2_el_9[["demo"]][[i]] = income_eln_demo(1,5,NULL,NULL,9,9, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+
+cat("\n \n \n",8,"\n \n \n")
+income_models_2_el_8[["brain-only"]][[i]] = income_eln(1,5,NULL,NULL,8,8, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+income_models_2_el_8[["demo"]][[i]] = income_eln_demo(1,5,NULL,NULL,8,8, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+
+cat("\n \n \n",7,"\n \n \n")
+income_models_2_el_7[["brain-only"]][[i]] = income_eln(1,5,NULL,NULL,6,7, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+income_models_2_el_7[["demo"]][[i]] = income_eln_demo(1,5,NULL,NULL,6,7, baseline_datasets[[i]], baseline_datasets_test[[i]], 2)
+
+}
+```
+
+```{r nh dis models}
+Progress = 0
+adi_models = NULL
+coi_models = NULL
+for(i in names(baseline_datasets)){
+Progress = Progress + 25
+adi_models[["brain-only"]][[i]] = nh_eln(baseline_datasets[[i]],baseline_datasets_test[[i]],"adi_cat")
+
+adi_models[["demo"]][[i]] = nh_eln_demo(baseline_datasets[[i]],baseline_datasets_test[[i]],"adi_cat")
+
+
+coi_models[["brain-only"]][[i]] = nh_eln(baseline_datasets[[i]],baseline_datasets_test[[i]],"coi_cat")
+
+coi_models[["demo"]][[i]] = nh_eln_demo(baseline_datasets[[i]],baseline_datasets_test[[i]],"coi_cat")
+
+cat(" \n \n \n", Progress,"% Complete \n \n \n")
+
+}
+```
+
+
+```{r sex-specific}
+Sex_Results = NULL
+
+#Median Split Income
+for(s in unique(baseline_datasets[[1]]$sex)){
+  
+  
+  if(s == "Other"){
+    print("Skip")
+    
+  }
+    
+else{
+
+for(i in names(baseline_datasets)){
+
+
+#demo_5_1 <- read_csv("5.1 Release/Non-Brain/abcd_p_demo.csv") %>% 
+ #           dplyr::select("src_subject_id","eventname","race_ethnicity","demo_sex_v2","demo_comb_income_v2",
+ #                         "demo_comb_income_v2_l")
+#colnames(demo_5_1)[1] = "ID"
+
+adjusted_data = brain_metric_adjustment(baseline_datasets[[i]],baseline_datasets_test[[i]])
+temp_test = adjusted_data[[2]] %>% filter(sex == s)
+#temp_test = merge(demo_5_1[,c("ID","demo_comb_income_v2_l")],temp_test,by = "ID") %>% dplyr::select(-income)
+#colnames(temp_test)[2] = "income"
+
+temp_test$income = as.factor(if_else(temp_test$income%in% c(1:7),"Low.Income",
+                          # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                          if_else(temp_test$income %in% c(8:10),"Mid.High.Income",
+                                  if_else(temp_test$income == 999,NA,NA))))
+
+
+
+
+
+temp_test = temp_test %>% na.omit()
+predicted = predict(income_models_2[["brain-only"]][[i]][["eln"]],temp_test)
+predicted_probs = predict(income_models_2[["brain-only"]][[i]][["eln"]],temp_test, type = "prob")
+
+
+dat = data.frame("pred" = ordered(predicted),
+                "obs" = ordered(temp_test$income,levels = c("Mid.High.Income","Low.Income")),
+                "Low.Income" = predicted_probs[,"Low.Income"],
+               "Mid.High.Income" =  predicted_probs[,"Mid.High.Income"])
+
+               
+Sex_Results[["brain-only"]][[s]][[i]] = multiClassSummary(dat,lev = c("Mid.High.Income","Low.Income"))
+
+predicted = predict(income_models_2[["demo"]][[i]][["eln"]],temp_test)
+predicted_probs = predict(income_models_2[["demo"]][[i]][["eln"]],temp_test, type = "prob")
+
+
+dat = data.frame("pred" = ordered(predicted),
+                "obs" = ordered(temp_test$income,levels = c("Mid.High.Income","Low.Income")),
+                "Low.Income" = predicted_probs[,"Low.Income"],
+               "Mid.High.Income" =  predicted_probs[,"Mid.High.Income"])
+
+               
+Sex_Results[["demo"]][[s]][[i]] = multiClassSummary(dat,lev = c("Mid.High.Income","Low.Income"))
+
+
+}
+} 
+}
+
+income_sex_table = NULL
+for(t in names(Sex_Results)){
+  for (s in names(Sex_Results[[t]])) {
+    
+  
+      for (m in names(Sex_Results[[t]][[s]])){
+    
+        row = c(s,m,Sex_Results[[t]][[s]][[m]][["AUC"]],Sex_Results[[t]][[s]][[m]][["Accuracy"]])
+        income_sex_table = rbind(income_sex_table,row)
+  }
+  
+  
+  
+  }
+}
+colnames(income_sex_table) = c("Sex","Modality","AUC","Accuracy")
+income_sex_table = as_tibble(income_sex_table)
+income_sex_table[,3:4] = lapply(income_sex_table[,3:4],as.numeric)
+income_sex_table[,3:4] = lapply(income_sex_table[,3:4],round,3)
+
+
+income_sex_table$AUC_Demo = rep(income_sex_table$AUC[9:16],2)
+income_sex_table$Accuracy_Demo = rep(income_sex_table$Accuracy[9:16],2)
+income_sex_table = income_sex_table[1:8,]
+
+Sex_Results_income = Sex_Results
+
+#Income for Level 10
+for(s in unique(baseline_datasets[[1]]$sex)){
+  
+  
+  if(s == "Other"){
+    print("Skip")
+    
+  }
+  
+  else{
+    
+    for(i in names(baseline_datasets)){
+      
+      
+      #demo_5_1 <- read_csv("5.1 Release/Non-Brain/abcd_p_demo.csv") %>% 
+      #           dplyr::select("src_subject_id","eventname","race_ethnicity","demo_sex_v2","demo_comb_income_v2",
+      #                         "demo_comb_income_v2_l")
+      #colnames(demo_5_1)[1] = "ID"
+      
+      adjusted_data = brain_metric_adjustment(baseline_datasets[[i]],baseline_datasets_test[[i]])
+      temp_test = adjusted_data[[2]] %>% filter(sex == s)
+      #temp_test = merge(demo_5_1[,c("ID","demo_comb_income_v2_l")],temp_test,by = "ID") %>% dplyr::select(-income)
+      #colnames(temp_test)[2] = "income"
+      
+      temp_test$income = as.factor(if_else(temp_test$income%in% c(1:5),"Low.Income",
+                                           # if_else(cbcl$income %in% c(9),"Mid-High Income",
+                                           if_else(temp_test$income %in% c(10),"Mid.High.Income",
+                                                   if_else(temp_test$income == 999,NA,NA))))
+      
+      
+      
+      
+      
+      temp_test = temp_test %>% na.omit()
+      predicted = predict(income_models_2[["brain-only"]][[i]][["eln"]],temp_test)
+      predicted_probs = predict(income_models_2[["brain-only"]][[i]][["eln"]],temp_test, type = "prob")
+      
+      
+      dat = data.frame("pred" = ordered(predicted),
+                       "obs" = ordered(temp_test$income,levels = c("Mid.High.Income","Low.Income")),
+                       "Low.Income" = predicted_probs[,"Low.Income"],
+                       "Mid.High.Income" =  predicted_probs[,"Mid.High.Income"])
+      
+      
+      Sex_Results[["brain-only"]][[s]][[i]] = multiClassSummary(dat,lev = c("Mid.High.Income","Low.Income"))
+      
+      predicted = predict(income_models_2[["demo"]][[i]][["eln"]],temp_test)
+      predicted_probs = predict(income_models_2[["demo"]][[i]][["eln"]],temp_test, type = "prob")
+      
+      
+      dat = data.frame("pred" = ordered(predicted),
+                       "obs" = ordered(temp_test$income,levels = c("Mid.High.Income","Low.Income")),
+                       "Low.Income" = predicted_probs[,"Low.Income"],
+                       "Mid.High.Income" =  predicted_probs[,"Mid.High.Income"])
+      
+      
+      Sex_Results[["demo"]][[s]][[i]] = multiClassSummary(dat,lev = c("Mid.High.Income","Low.Income"))
+      
+      
+    }
+  } 
+}
+
+income_sex_table_10 = NULL
+for(t in names(Sex_Results)){
+  for (s in names(Sex_Results[[t]])) {
+    
+    for (m in names(Sex_Results[[t]][[s]])){
+      
+      row = c(s, m, Sex_Results[[t]][[s]][[m]][["AUC"]], Sex_Results[[t]][[s]][[m]][["Accuracy"]])
+      income_sex_table_10 = rbind(income_sex_table_10, row)
+    }
+  }
+}
+colnames(income_sex_table_10) = c("Sex", "Modality", "AUC", "Accuracy")
+income_sex_table_10 = as_tibble(income_sex_table_10)
+income_sex_table_10[, 3:4] = lapply(income_sex_table_10[, 3:4], as.numeric)
+income_sex_table_10[, 3:4] = lapply(income_sex_table_10[, 3:4], round, 3)
+
+income_sex_table_10$AUC_Demo = rep(income_sex_table_10$AUC[9:16], 2)
+income_sex_table_10$Accuracy_Demo = rep(income_sex_table_10$Accuracy[9:16], 2)
+income_sex_table_10 = income_sex_table_10[1:8, ]
+
+Sex_Results_income_10 = Sex_Results
+
+
+
+#ADI 
+for(s in unique(baseline_datasets[[1]]$sex)){
+  
+  
+  if(s == "Other"){
+    print("Skip")
+    
+  }
+  
+  else{
+    
+    for(i in names(baseline_datasets)){
+      
+      
+      #demo_5_1 <- read_csv("5.1 Release/Non-Brain/abcd_p_demo.csv") %>% 
+      #           dplyr::select("src_subject_id","eventname","race_ethnicity","demo_sex_v2","demo_comb_income_v2",
+      #                         "demo_comb_income_v2_l")
+      #colnames(demo_5_1)[1] = "ID"
+      
+      adjusted_data = brain_metric_adjustment(baseline_datasets[[i]],baseline_datasets_test[[i]])
+      temp_test = adjusted_data[[2]] %>% filter(sex == s)
+      #temp_test = merge(demo_5_1[,c("ID","demo_comb_income_v2_l")],temp_test,by = "ID") %>% dplyr::select(-income)
+      #colnames(temp_test)[2] = "income"
+      
+      temp_test = temp_test %>% na.omit()
+      predicted = predict(adi_models[["brain-only"]][[i]][["eln"]],temp_test)
+      predicted_probs = predict(adi_models[["brain-only"]][[i]][["eln"]],temp_test, type = "prob")
+      
+      
+      dat = data.frame("pred" = ordered(predicted),
+                       "obs" = ordered(temp_test$adi_cat, levels = c("Yes", "No")),
+                       "Yes" = predicted_probs[,"Yes"],
+                       "No" = predicted_probs[,"No"])
+      
+      Sex_Results[["brain-only"]][[s]][[i]] = multiClassSummary(dat, lev = c("Yes", "No"))
+      
+      predicted = predict(adi_models[["demo"]][[i]][["eln"]], temp_test)
+      predicted_probs = predict(adi_models[["demo"]][[i]][["eln"]], temp_test, type = "prob")
+      
+      dat = data.frame("pred" = ordered(predicted),
+                       "obs" = ordered(temp_test$adi_cat, levels = c("Yes", "No")),
+                       "Yes" = predicted_probs[,"Yes"],
+                       "No" = predicted_probs[,"No"])
+      
+      Sex_Results[["demo"]][[s]][[i]] = multiClassSummary(dat, lev = c("Yes", "No"))
+      
+      
+    }
+  } 
+}
+
+      
+adi_sex_table = NULL
+for(t in names(Sex_Results)){
+  for (s in names(Sex_Results[[t]])) {
+    
+    for (m in names(Sex_Results[[t]][[s]])){
+      
+      row = c(s, m, Sex_Results[[t]][[s]][[m]][["AUC"]], Sex_Results[[t]][[s]][[m]][["Accuracy"]])
+      adi_sex_table = rbind(adi_sex_table, row)
+    }
+  }
+}
+colnames(adi_sex_table) = c("Sex", "Modality", "AUC", "Accuracy")
+adi_sex_table = as_tibble(adi_sex_table)
+adi_sex_table[, 3:4] = lapply(adi_sex_table[, 3:4], as.numeric)
+adi_sex_table[, 3:4] = lapply(adi_sex_table[, 3:4], round, 3)
+
+adi_sex_table$AUC_Demo = rep(adi_sex_table$AUC[9:16], 2)
+adi_sex_table$Accuracy_Demo = rep(adi_sex_table$Accuracy[9:16], 2)
+adi_sex_table = adi_sex_table[1:8,]
+
+Sex_Results_adi = Sex_Results
+
+
+#COI 
+for(s in unique(baseline_datasets[[1]]$sex)){
+  
+  
+  if(s == "Other"){
+    print("Skip")
+    
+  }
+  
+  else{
+    
+    for(i in names(baseline_datasets)){
+      
+      
+      #demo_5_1 <- read_csv("5.1 Release/Non-Brain/abcd_p_demo.csv") %>% 
+      #           dplyr::select("src_subject_id","eventname","race_ethnicity","demo_sex_v2","demo_comb_income_v2",
+      #                         "demo_comb_income_v2_l")
+      #colnames(demo_5_1)[1] = "ID"
+      
+      adjusted_data = brain_metric_adjustment(baseline_datasets[[i]],baseline_datasets_test[[i]])
+      temp_test = adjusted_data[[2]] %>% filter(sex == s)
+      #temp_test = merge(demo_5_1[,c("ID","demo_comb_income_v2_l")],temp_test,by = "ID") %>% dplyr::select(-income)
+      #colnames(temp_test)[2] = "income"
+      
+      temp_test = temp_test %>% na.omit()
+      predicted = predict(coi_models[["brain-only"]][[i]][["eln"]],temp_test)
+      predicted_probs = predict(coi_models[["brain-only"]][[i]][["eln"]],temp_test, type = "prob")
+      
+      
+      dat = data.frame("pred" = ordered(predicted),
+                       "obs" = ordered(temp_test$coi_cat, levels = c("Yes", "No")),
+                       "Yes" = predicted_probs[,"Yes"],
+                       "No" = predicted_probs[,"No"])
+      
+      Sex_Results[["brain-only"]][[s]][[i]] = multiClassSummary(dat, lev = c("Yes", "No"))
+      
+      predicted = predict(coi_models[["demo"]][[i]][["eln"]], temp_test)
+      predicted_probs = predict(coi_models[["demo"]][[i]][["eln"]], temp_test, type = "prob")
+      
+      dat = data.frame("pred" = ordered(predicted),
+                       "obs" = ordered(temp_test$coi_cat, levels = c("Yes", "No")),
+                       "Yes" = predicted_probs[,"Yes"],
+                       "No" = predicted_probs[,"No"])
+      
+      Sex_Results[["demo"]][[s]][[i]] = multiClassSummary(dat, lev = c("Yes", "No"))
+      
+      
+    }
+  } 
+}
+
+      
+coi_sex_table = NULL
+for(t in names(Sex_Results)){
+  for (s in names(Sex_Results[[t]])) {
+    
+    for (m in names(Sex_Results[[t]][[s]])){
+      
+      row = c(s, m, Sex_Results[[t]][[s]][[m]][["AUC"]], Sex_Results[[t]][[s]][[m]][["Accuracy"]])
+      coi_sex_table = rbind(coi_sex_table, row)
+    }
+  }
+}
+colnames(coi_sex_table) = c("Sex", "Modality", "AUC", "Accuracy")
+coi_sex_table = as_tibble(coi_sex_table)
+coi_sex_table[, 3:4] = lapply(coi_sex_table[, 3:4], as.numeric)
+coi_sex_table[, 3:4] = lapply(coi_sex_table[, 3:4], round, 3)
+
+coi_sex_table$AUC_Demo = rep(coi_sex_table$AUC[9:16], 2)
+coi_sex_table$Accuracy_Demo = rep(coi_sex_table$Accuracy[9:16], 2)
+coi_sex_table = coi_sex_table[1:8,]
+
+Sex_Results_adi = Sex_Results
+
+rm(Sex_Results)
+
+```
+
+
+```{r neurocog-behavioral check}
+
+full_sample = rbind(baseline_datasets[[4]],baseline_datasets_test[[4]])
+t_test_results = list()
+
+t_test_results[["Picture Vocabulary Test"]] = t_test_neurocog("nihtbx_picvocab_agecorrected")
+t_test_results[["Oral Reading Recognition Test"]] = t_test_neurocog("nihtbx_reading_agecorrected")
+t_test_results[["Flanker Inhibitory Control and Attention Test"]] = t_test_neurocog("nihtbx_flanker_agecorrected")
+t_test_results[["Dimension Change Card Sort Test"]] = t_test_neurocog("nihtbx_cardsort_agecorrected")
+t_test_results[["Picture Sequence Memory Test"]] = t_test_neurocog("nihtbx_picture_agecorrected")
+t_test_results[["List Sorting Working Memory Test"]] = t_test_neurocog("nihtbx_list_agecorrected")
+
+lmt = read_csv("5.1 Release/Non-Brain/nc_y_lmt.csv")
+lmt$lmt_scr_perc_correct= lmt$lmt_scr_perc_correct *100
+mrt <- read_csv("5.1 Release/Non-Brain/nc_y_wisc.csv")
+cbcl_nonnih = read_csv("5.1 Release/Non-Brain/mh_p_cbcl.csv")
+
+t_test_results[["Little Man Task"]] = nonnih_t_test(lmt,"lmt_scr_perc_correct","All")
+t_test_results[["Matrix Reasoning Task"]] = nonnih_t_test(mrt,"pea_wiscv_tss","All")
+t_test_results[["Matrix Reasoning Task"]] = nonnih_t_test(mrt,"pea_wiscv_tss","All")
+t_test_results[["CBCL Attention"]] = nonnih_t_test(cbcl_nonnih,"cbcl_scr_syn_attention_t","All")
+t_test_results[["CBCL Externalizing"]] = nonnih_t_test(cbcl_nonnih,"cbcl_scr_syn_external_t","All")
+t_test_results[["CBCL Internalizing "]] = nonnih_t_test(cbcl_nonnih,"cbcl_scr_syn_internal_t","All")
+
+
+t_test_table = NULL
+for(j in names(t_test_results)){
+  for(i in names(t_test_results[[j]])){
+    
+    row = c(i,j,
+            t_test_results[[j]][[i]][["estimate"]][[2]],
+            t_test_results[[j]][[i]][["estimate"]][[1]],
+            t_test_results[[j]][[i]][["estimate"]][[2]]-t_test_results[[j]][[i]][["estimate"]][[1]],
+            t_test_results[[j]][[i]]$p.value)
+    t_test_table = rbind(t_test_table,row)
+    t_test_table = as_tibble(t_test_table)
+  }
+  
+}
+row.names(t_test_table) = NULL 
+t_test_table$Adjusted = p.adjust(t_test_table$V6)
+
+colnames(t_test_table) = c("Level","Neurocognitive/Behavioral Measure","Lower Strata Mean","Upper Strata Mean",
+                           "Mean Difference","p_unadjusted","p_adjusted")
+
+
+t_test_table[,3:4] = lapply(t_test_table[,3:4],as.numeric)
+t_test_table[,3:4] = lapply(t_test_table[,3:4],round,2)
+t_test_table[,5:6] = lapply(t_test_table[,5:6],as.numeric)
+t_test_table[,5:6] = lapply(t_test_table[,5:6],formatC)
+
+t_test_table$Level = ordered(t_test_table$Level,levels = c("6","8","9","10","2-level","cp","coi"))
+
+# Perform t-tests for Males and Females
+sex_t_test_results_Male = list()
+sex_t_test_results_Female = list()
+
+# Variables for t-tests
+variables = c("nihtbx_picvocab_agecorrected", 
+              "nihtbx_reading_agecorrected", 
+              "nihtbx_flanker_agecorrected", 
+              "nihtbx_cardsort_agecorrected", 
+              "nihtbx_picture_agecorrected", 
+              "nihtbx_list_agecorrected")
+
+# Perform t-tests for each variable for both sexes
+for (var in variables) {
+  sex_t_test_results_Male[[var]] = sex_t_test_neurocog(var, "Male")
+  sex_t_test_results_Female[[var]] = sex_t_test_neurocog(var, "Female")
+}
+
+
+
+sex_t_test_results_Male[["lmt"]] = nonnih_t_test(lmt,"lmt_scr_perc_correct","Male")
+sex_t_test_results_Female[["lmt"]] = nonnih_t_test(lmt,"lmt_scr_perc_correct","Female")
+sex_t_test_results_Male[["mrt"]] = nonnih_t_test(mrt,"pea_wiscv_tss","Male")
+sex_t_test_results_Female[["mrt"]] = nonnih_t_test(mrt,"pea_wiscv_tss","Female")
+sex_t_test_results_Male[["CBCL Attention"]] = nonnih_t_test(cbcl_nonnih,"cbcl_scr_syn_attention_t","Male")
+sex_t_test_results_Female[["CBCL Attention"]] = nonnih_t_test(cbcl_nonnih,"cbcl_scr_syn_attention_t","Female")
+sex_t_test_results_Male[["CBCL Externalizing"]] = nonnih_t_test(cbcl_nonnih,"cbcl_scr_syn_external_t","Male")
+sex_t_test_results_Female[["CBCL Externalizing"]] = nonnih_t_test(cbcl_nonnih,"cbcl_scr_syn_external_t","Female")
+sex_t_test_results_Male[["CBCL Internalizing"]] = nonnih_t_test(cbcl_nonnih,"cbcl_scr_syn_internal_t","Male")
+sex_t_test_results_Female[["CBCL Internalizing"]] = nonnih_t_test(cbcl_nonnih,"cbcl_scr_syn_internal_t","Female")
+
+names(sex_t_test_results_Male) = names(t_test_table)
+names(sex_t_test_results_Female) = names(t_test_table)
+
+# Initialize separate tables for Male and Female
+t_test_table_Male = NULL
+t_test_table_Female = NULL
+
+# Create t-test tables for each sex
+for (sex in c("Male", "Female")) {
+  
+  # Select the correct results based on sex
+  results = if (sex == "Male") sex_t_test_results_Male else sex_t_test_results_Female
+  
+  t_test_table_sex = NULL
+  for (j in names(results)) {
+    for (i in names(results[[j]])) {
+      
+      row = c(i,j,
+              results[[j]][[i]][["estimate"]][[2]],
+              results[[j]][[i]][["estimate"]][[1]],
+              results[[j]][[i]][["estimate"]][[2]]-results[[j]][[i]][["estimate"]][[1]],
+              results[[j]][[i]]$p.value)
+      t_test_table_sex = rbind(t_test_table_sex, row)
+    }
+  }
+  
+  t_test_table_sex = as_tibble(t_test_table_sex)
+  colnames(t_test_table_sex) = c("Level","Neurocognitive/Behavioral Measure","Reference Mean","Comparison Mean","Mean Difference","p_unadjusted")
+  t_test_table_sex$Adjusted = p.adjust(t_test_table_sex$p_unadjusted)
+  
+  # Convert numeric columns to proper types and format
+  t_test_table_sex[, 3:4] = lapply(t_test_table_sex[, 3:4], as.numeric)
+  t_test_table_sex[, 3:4] = lapply(t_test_table_sex[, 3:4], round, 2)
+  t_test_table_sex[, 5:6] = lapply(t_test_table_sex[, 5:6], as.numeric)
+  t_test_table_sex[, 5:6] = lapply(t_test_table_sex[, 5:6], formatC)
+  
+  t_test_table_sex$Level = ordered(t_test_table_sex$Level, levels = c("6", "8", "9", "10", "2-level", "cp","coi"))
+  colnames(t_test_table_sex) =  c("Level","Neurocognitive/Behavioral Measure","Lower Strata Mean","Upper Strata Mean","Mean Difference","p_unadjusted","p_adjusted")
+  if (sex == "Male") {
+    t_test_table_Male = t_test_table_sex
+  } else {
+    t_test_table_Female = t_test_table_sex
+  }
+}
+
+
+save.image("Income_Latest.RData")
+```
