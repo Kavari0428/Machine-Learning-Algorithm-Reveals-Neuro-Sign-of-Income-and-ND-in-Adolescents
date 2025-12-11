@@ -1,0 +1,784 @@
+Neural Features used in Analysis
+lh-Banks of the Superior Temporal Sulcus (Area)
+lh-Caudal Anterior Cingulate (Area)
+lh-Caudal Middle Frontal (Area)
+lh-Cuneus (Area)
+lh-Entorhinal (Area)
+lh-Fusiform (Area)
+lh-Inferior Parietal (Area)
+lh-Inferior Temporal (Area)
+lh-Isthmus of Cingulate (Area)
+lh-Lateral Occipital (Area)
+lh-Lateral Orbitofrontal (Area)
+lh-Lingual (Area)
+lh-Medial Orbitofrontal (Area)
+lh-Middle Temporal (Area)
+lh-Parahippocampal (Area)
+lh-Paracentral (Area)
+lh-Pars Opercularis (Area)
+lh-Pars Orbitalis (Area)
+lh-Pars Triangularis (Area)
+lh-Pericalcarine (Area)
+lh-Postcentral (Area)
+lh-Posterior Cingulate (Area)
+lh-Precentral (Area)
+lh-Precuneus (Area)
+lh-Rostral Anterior Cingulate (Area)
+lh-Rostral Middle Frontal (Area)
+lh-Superior Frontal (Area)
+lh-Superior Parietal (Area)
+lh-Superior Temporal (Area)
+lh-Supramarginal (Area)
+lh-Frontal Pole (Area)
+lh-Temporal Pole (Area)
+lh-Transverse Temporal (Area)
+lh-Insula (Area)
+rh-Banks of the Superior Temporal Sulcus (Area)
+rh-Caudal Anterior Cingulate (Area)
+rh-Caudal Middle Frontal (Area)
+rh-Cuneus (Area)
+rh-Entorhinal (Area)
+rh-Fusiform (Area)
+rh-Inferior Parietal (Area)
+rh-Inferior Temporal (Area)
+rh-Isthmus of Cingulate (Area)
+rh-Lateral Occipital (Area)
+rh-Lateral Orbitofrontal (Area)
+rh-Lingual (Area)
+rh-Medial Orbitofrontal (Area)
+rh-Middle Temporal (Area)
+rh-Parahippocampal (Area)
+rh-Paracentral (Area)
+rh-Pars Opercularis (Area)
+rh-Pars Orbitalis (Area)
+rh-Pars Triangularis (Area)
+rh-Pericalcarine (Area)
+rh-Postcentral (Area)
+rh-Posterior Cingulate (Area)
+rh-Precentral (Area)
+rh-Precuneus (Area)
+rh-Rostral Anterior Cingulate (Area)
+rh-Rostral Middle Frontal (Area)
+rh-Superior Frontal (Area)
+rh-Superior Parietal (Area)
+rh-Superior Temporal (Area)
+rh-Supramarginal (Area)
+rh-Frontal Pole (Area)
+rh-Temporal Pole (Area)
+rh-Transverse Temporal (Area)
+rh-Insula (Area)
+Left Hemisphere (Area)
+Right Hemisphere (Area)
+Whole Brain (Area)
+lh-Banks of the Superior Temporal Sulcus (Volume)
+lh-Caudal Anterior Cingulate (Volume)
+lh-Caudal Middle Frontal (Volume)
+lh-Cuneus (Volume)
+lh-Entorhinal (Volume)
+lh-Fusiform (Volume)
+lh-Inferior Parietal (Volume)
+lh-Inferior Temporal (Volume)
+lh-Isthmus of Cingulate (Volume)
+lh-Lateral Occipital (Volume)
+lh-Lateral Orbitofrontal (Volume)
+lh-Lingual (Volume)
+lh-Medial Orbitofrontal (Volume)
+lh-Middle Temporal (Volume)
+lh-Parahippocampal (Volume)
+lh-Paracentral (Volume)
+lh-Pars Opercularis (Volume)
+lh-Pars Orbitalis (Volume)
+lh-Pars Triangularis (Volume)
+lh-Pericalcarine (Volume)
+lh-Postcentral (Volume)
+lh-Posterior Cingulate (Volume)
+lh-Precentral (Volume)
+lh-Precuneus (Volume)
+lh-Rostral Anterior Cingulate (Volume)
+lh-Rostral Middle Frontal (Volume)
+lh-Superior Frontal (Volume)
+lh-Superior Parietal (Volume)
+lh-Superior Temporal (Volume)
+lh-Supramarginal (Volume)
+lh-Frontal Pole (Volume)
+lh-Temporal Pole (Volume)
+lh-Transverse Temporal (Volume)
+lh-Insula (Volume)
+rh-Banks of the Superior Temporal Sulcus (Volume)
+rh-Caudal Anterior Cingulate (Volume)
+rh-Caudal Middle Frontal (Volume)
+rh-Cuneus (Volume)
+rh-Entorhinal (Volume)
+rh-Fusiform (Volume)
+rh-Inferior Parietal (Volume)
+rh-Inferior Temporal (Volume)
+rh-Isthmus of Cingulate (Volume)
+rh-Lateral Occipital (Volume)
+rh-Lateral Orbitofrontal (Volume)
+rh-Lingual (Volume)
+rh-Medial Orbitofrontal (Volume)
+rh-Middle Temporal (Volume)
+rh-Parahippocampal (Volume)
+rh-Paracentral (Volume)
+rh-Pars Opercularis (Volume)
+rh-Pars Orbitalis (Volume)
+rh-Pars Triangularis (Volume)
+rh-Pericalcarine (Volume)
+rh-Postcentral (Volume)
+rh-Posterior Cingulate (Volume)
+rh-Precentral (Volume)
+rh-Precuneus (Volume)
+rh-Rostral Anterior Cingulate (Volume)
+rh-Rostral Middle Frontal (Volume)
+rh-Superior Frontal (Volume)
+rh-Superior Parietal (Volume)
+rh-Superior Temporal (Volume)
+rh-Supramarginal (Volume)
+rh-Frontal Pole (Volume)
+rh-Temporal Pole (Volume)
+rh-Transverse Temporal (Volume)
+rh-Insula (Volume)
+Left Hemisphere (Volume)
+Right Hemisphere (Volume)
+Whole Brain (Volume)
+lh-Banks of the Superior Temporal Sulcus (Thickness)
+lh-Caudal Anterior Cingulate (Thickness)
+lh-Caudal Middle Frontal (Thickness)
+lh-Cuneus (Thickness)
+lh-Entorhinal (Thickness)
+lh-Fusiform (Thickness)
+lh-Inferior Parietal (Thickness)
+lh-Inferior Temporal (Thickness)
+lh-Isthmus of Cingulate (Thickness)
+lh-Lateral Occipital (Thickness)
+lh-Lateral Orbitofrontal (Thickness)
+lh-Lingual (Thickness)
+lh-Medial Orbitofrontal (Thickness)
+lh-Middle Temporal (Thickness)
+lh-Parahippocampal (Thickness)
+lh-Paracentral (Thickness)
+lh-Pars Opercularis (Thickness)
+lh-Pars Orbitalis (Thickness)
+lh-Pars Triangularis (Thickness)
+lh-Pericalcarine (Thickness)
+lh-Postcentral (Thickness)
+lh-Posterior Cingulate (Thickness)
+lh-Precentral (Thickness)
+lh-Precuneus (Thickness)
+lh-Rostral Anterior Cingulate (Thickness)
+lh-Rostral Middle Frontal (Thickness)
+lh-Superior Frontal (Thickness)
+lh-Superior Parietal (Thickness)
+lh-Superior Temporal (Thickness)
+lh-Supramarginal (Thickness)
+lh-Frontal Pole (Thickness)
+lh-Temporal Pole (Thickness)
+lh-Transverse Temporal (Thickness)
+lh-Insula (Thickness)
+rh-Banks of the Superior Temporal Sulcus (Thickness)
+rh-Caudal Anterior Cingulate (Thickness)
+rh-Caudal Middle Frontal (Thickness)
+rh-Cuneus (Thickness)
+rh-Entorhinal (Thickness)
+rh-Fusiform (Thickness)
+rh-Inferior Parietal (Thickness)
+rh-Inferior Temporal (Thickness)
+rh-Isthmus of Cingulate (Thickness)
+rh-Lateral Occipital (Thickness)
+rh-Lateral Orbitofrontal (Thickness)
+rh-Lingual (Thickness)
+rh-Medial Orbitofrontal (Thickness)
+rh-Middle Temporal (Thickness)
+rh-Parahippocampal (Thickness)
+rh-Paracentral (Thickness)
+rh-Pars Opercularis (Thickness)
+rh-Pars Orbitalis (Thickness)
+rh-Pars Triangularis (Thickness)
+rh-Pericalcarine (Thickness)
+rh-Postcentral (Thickness)
+rh-Posterior Cingulate (Thickness)
+rh-Precentral (Thickness)
+rh-Precuneus (Thickness)
+rh-Rostral Anterior Cingulate (Thickness)
+rh-Rostral Middle Frontal (Thickness)
+rh-Superior Frontal (Thickness)
+rh-Superior Parietal (Thickness)
+rh-Superior Temporal (Thickness)
+rh-Supramarginal (Thickness)
+rh-Frontal Pole (Thickness)
+rh-Temporal Pole (Thickness)
+rh-Transverse Temporal (Thickness)
+rh-Insula (Thickness)
+Left Hemisphere (Thickness)
+Right Hemisphere (Thickness)
+Whole Brain (Thickness)
+lh-Banks of the Superior Temporal Sulcus (Sulcal Depth)
+lh-Caudal Anterior Cingulate (Sulcal Depth)
+lh-Caudal Middle Frontal (Sulcal Depth)
+lh-Cuneus (Sulcal Depth)
+lh-Entorhinal (Sulcal Depth)
+lh-Fusiform (Sulcal Depth)
+lh-Inferior Parietal (Sulcal Depth)
+lh-Inferior Temporal (Sulcal Depth)
+lh-Isthmus of Cingulate (Sulcal Depth)
+lh-Lateral Occipital (Sulcal Depth)
+lh-Lateral Orbitofrontal (Sulcal Depth)
+lh-Lingual (Sulcal Depth)
+lh-Medial Orbitofrontal (Sulcal Depth)
+lh-Middle Temporal (Sulcal Depth)
+lh-Parahippocampal (Sulcal Depth)
+lh-Paracentral (Sulcal Depth)
+lh-Pars Opercularis (Sulcal Depth)
+lh-Pars Orbitalis (Sulcal Depth)
+lh-Pars Triangularis (Sulcal Depth)
+lh-Pericalcarine (Sulcal Depth)
+lh-Postcentral (Sulcal Depth)
+lh-Posterior Cingulate (Sulcal Depth)
+lh-Precentral (Sulcal Depth)
+lh-Precuneus (Sulcal Depth)
+lh-Rostral Anterior Cingulate (Sulcal Depth)
+lh-Rostral Middle Frontal (Sulcal Depth)
+lh-Superior Frontal (Sulcal Depth)
+lh-Superior Parietal (Sulcal Depth)
+lh-Superior Temporal (Sulcal Depth)
+lh-Supramarginal (Sulcal Depth)
+lh-Frontal Pole (Sulcal Depth)
+lh-Temporal Pole (Sulcal Depth)
+lh-Transverse Temporal (Sulcal Depth)
+lh-Insula (Sulcal Depth)
+rh-Banks of the Superior Temporal Sulcus (Sulcal Depth)
+rh-Caudal Anterior Cingulate (Sulcal Depth)
+rh-Caudal Middle Frontal (Sulcal Depth)
+rh-Cuneus (Sulcal Depth)
+rh-Entorhinal (Sulcal Depth)
+rh-Fusiform (Sulcal Depth)
+rh-Inferior Parietal (Sulcal Depth)
+rh-Inferior Temporal (Sulcal Depth)
+rh-Isthmus of Cingulate (Sulcal Depth)
+rh-Lateral Occipital (Sulcal Depth)
+rh-Lateral Orbitofrontal (Sulcal Depth)
+rh-Lingual (Sulcal Depth)
+rh-Medial Orbitofrontal (Sulcal Depth)
+rh-Middle Temporal (Sulcal Depth)
+rh-Parahippocampal (Sulcal Depth)
+rh-Paracentral (Sulcal Depth)
+rh-Pars Opercularis (Sulcal Depth)
+rh-Pars Orbitalis (Sulcal Depth)
+rh-Pars Triangularis (Sulcal Depth)
+rh-Pericalcarine (Sulcal Depth)
+rh-Postcentral (Sulcal Depth)
+rh-Posterior Cingulate (Sulcal Depth)
+rh-Precentral (Sulcal Depth)
+rh-Precuneus (Sulcal Depth)
+rh-Rostral Anterior Cingulate (Sulcal Depth)
+rh-Rostral Middle Frontal (Sulcal Depth)
+rh-Superior Frontal (Sulcal Depth)
+rh-Superior Parietal (Sulcal Depth)
+rh-Superior Temporal (Sulcal Depth)
+rh-Supramarginal (Sulcal Depth)
+rh-Frontal Pole (Sulcal Depth)
+rh-Temporal Pole (Sulcal Depth)
+rh-Transverse Temporal (Sulcal Depth)
+rh-Insula (Sulcal Depth)
+Left Hemisphere (Sulcal Depth)
+Right Hemisphere (Sulcal Depth)
+Whole Brain (Sulcal Depth)
+Intracranial Volume
+Auditory to Auditory
+Auditory to Cingulo-Opercular
+Auditory to Cingulo-Parietal
+Auditory to Default
+Auditory to Dorsal Attention
+Auditory to Fronto-Parietal
+Auditory to None
+Auditory to Retrosplenial
+Auditory to Salience
+Auditory to Sensorimotor Hand
+Auditory to Sensorimotor Mouth
+Auditory to Ventral Attention
+Auditory to Visual
+Cingulo-Opercular to Auditory
+Cingulo-Opercular to Cingulo-Opercular
+Cingulo-Opercular to Cingulo-Parietal
+Cingulo-Opercular to Default
+Cingulo-Opercular to Dorsal Attention
+Cingulo-Opercular to Fronto-Parietal
+Cingulo-Opercular to None
+Cingulo-Opercular to Retrosplenial
+Cingulo-Opercular to Salience
+Cingulo-Opercular to Sensorimotor Hand
+Cingulo-Opercular to Sensorimotor Mouth
+Cingulo-Opercular to Ventral Attention
+Cingulo-Opercular to Visual
+Cingulo-Parietal to Auditory
+Cingulo-Parietal to Cingulo-Opercular
+Cingulo-Parietal to Cingulo-Parietal
+Cingulo-Parietal to Default
+Cingulo-Parietal to Dorsal Attention
+Cingulo-Parietal to Fronto-Parietal
+Cingulo-Parietal to None
+Cingulo-Parietal to Retrosplenial
+Cingulo-Parietal to Salience
+Cingulo-Parietal to Sensorimotor Hand
+Cingulo-Parietal to Sensorimotor Mouth
+Cingulo-Parietal to Ventral Attention
+Cingulo-Parietal to Visual
+Default to Auditory
+Default to Cingulo-Opercular
+Default to Cingulo-Parietal
+Default to Default
+Default to Dorsal Attention
+Default to Fronto-Parietal
+Default to None
+Default to Retrosplenial
+Default to Salience
+Default to Sensorimotor Hand
+Default to Sensorimotor Mouth
+Default to Ventral Attention
+Default to Visual
+Dorsal Attention to Auditory
+Dorsal Attention to Cingulo-Opercular
+Dorsal Attention to Cingulo-Parietal
+Dorsal Attention to Default
+Dorsal Attention to Dorsal Attention
+Dorsal Attention to Fronto-Parietal
+Dorsal Attention to None
+Dorsal Attention to Retrosplenial
+Dorsal Attention to Salience
+Dorsal Attention to Sensorimotor Hand
+Dorsal Attention to Sensorimotor Mouth
+Dorsal Attention to Ventral Attention
+Dorsal Attention to Visual
+Fronto-Parietal to Auditory
+Fronto-Parietal to Cingulo-Opercular
+Fronto-Parietal to Cingulo-Parietal
+Fronto-Parietal to Default
+Fronto-Parietal to Dorsal Attention
+Fronto-Parietal to Fronto-Parietal
+Fronto-Parietal to None
+Fronto-Parietal to Retrosplenial
+Fronto-Parietal to Salience
+Fronto-Parietal to Sensorimotor Hand
+Fronto-Parietal to Sensorimotor Mouth
+Fronto-Parietal to Ventral Attention
+Fronto-Parietal to Visual
+None to Auditory
+None to Cingulo-Opercular
+None to Cingulo-Parietal
+None to Default
+None to Dorsal Attention
+None to Fronto-Parietal
+None to None
+None to Retrosplenial
+None to Salience
+None to Sensorimotor Hand
+None to Sensorimotor Mouth
+None to Ventral Attention
+None to Visual
+Retrosplenial to Auditory
+Retrosplenial to Cingulo-Opercular
+Retrosplenial to Cingulo-Parietal
+Retrosplenial to Default
+Retrosplenial to Dorsal Attention
+Retrosplenial to Fronto-Parietal
+Retrosplenial to None
+Retrosplenial to Retrosplenial
+Retrosplenial to Salience
+Retrosplenial to Sensorimotor Hand
+Retrosplenial to Sensorimotor Mouth
+Retrosplenial to Ventral Attention
+Retrosplenial to Visual
+Salience to Auditory
+Salience to Cingulo-Opercular
+Salience to Cingulo-Parietal
+Salience to Default
+Salience to Dorsal Attention
+Salience to Fronto-Parietal
+Salience to None
+Salience to Retrosplenial
+Salience to Salience
+Salience to Sensorimotor Hand
+Salience to Sensorimotor Mouth
+Salience to Ventral Attention
+Salience to Visual
+Sensorimotor Hand to Auditory
+Sensorimotor Hand to Cingulo-Opercular
+Sensorimotor Hand to Cingulo-Parietal
+Sensorimotor Hand to Default
+Sensorimotor Hand to Dorsal Attention
+Sensorimotor Hand to Fronto-Parietal
+Sensorimotor Hand to None
+Sensorimotor Hand to Retrosplenial
+Sensorimotor Hand to Salience
+Sensorimotor Hand to Sensorimotor Hand
+Sensorimotor Hand to Sensorimotor Mouth
+Sensorimotor Hand to Ventral Attention
+Sensorimotor Hand to Visual
+Sensorimotor Mouth to Auditory
+Sensorimotor Mouth to Cingulo-Opercular
+Sensorimotor Mouth to Cingulo-Parietal
+Sensorimotor Mouth to Default
+Sensorimotor Mouth to Dorsal Attention
+Sensorimotor Mouth to Fronto-Parietal
+Sensorimotor Mouth to None
+Sensorimotor Mouth to Retrosplenial
+Sensorimotor Mouth to Salience
+Sensorimotor Mouth to Sensorimotor Hand
+Sensorimotor Mouth to Sensorimotor Mouth
+Sensorimotor Mouth to Ventral Attention
+Sensorimotor Mouth to Visual
+Ventral Attention to Auditory
+Ventral Attention to Cingulo-Opercular
+Ventral Attention to Cingulo-Parietal
+Ventral Attention to Default
+Ventral Attention to Dorsal Attention
+Ventral Attention to Fronto-Parietal
+Ventral Attention to None
+Ventral Attention to Retrosplenial
+Ventral Attention to Salience
+Ventral Attention to Sensorimotor Hand
+Ventral Attention to Sensorimotor Mouth
+Ventral Attention to Ventral Attention
+Ventral Attention to Visual
+Visual to Auditory
+Visual to Cingulo-Opercular
+Visual to Cingulo-Parietal
+Visual to Default
+Visual to Dorsal Attention
+Visual to Fronto-Parietal
+Visual to None
+Visual to Retrosplenial
+Visual to Salience
+Visual to Sensorimotor Hand
+Visual to Sensorimotor Mouth
+Visual to Ventral Attention
+Visual to Visual
+fmotion
+All Fibers (FA)
+Left Hemisphere Fibers (FA)
+Left Hemisphere Fibers ex. CC (FA)
+Right Hemisphere Fibers ex. CC (FA)
+Right Hemisphere Fibers (FA)
+Left Anterior Thalamic Radiations (FA)
+Right Anterior Thalamic Radiations (FA)
+Corpus Callosum (FA)
+Left Cingulate Cingulum (FA)
+Right Cingulate Cingulum (FA)
+Left Parahippocampal Cingulum (FA)
+Right Parahippocampal Cingulum (FA)
+Left Corticospinal/Pyramidal (FA)
+Right Corticospinal/Pyramidal (FA)
+Forceps Major (FA)
+Forceps Minor (FA)
+Left Sup. Corticostriate-Frontal (FA)
+Right Sup. Corticostriate-Frontal (FA)
+Left Fornix (Excluding Fimbria) (FA)
+Right Fornix (Excluding Fimbria) (FA)
+Left Fornix (FA)
+Right Fornix (FA)
+Left Inf.-fronto-occipital Fasc. (FA)
+Right Inf.-fronto-occipital Fasiculus (FA)
+Left Inf. Frontal Sup.Frontal (FA)
+Right Inf. Frontal Superior Frontal (FA)
+Left Inf. Long. Fasc. (FA)
+Right Inf. Long. Fasc. (FA)
+Left Sup. Corticostriate-Parietal (FA)
+Right Sup. Corticostriate-Parietal (FA)
+Left Parietal Sup. Long. Fasc. (FA)
+Right Parietal Sup. Long. Fasc. (FA)
+Left Sup. Corticostriate (FA)
+Right Sup. Corticostriate (FA)
+Left Striatal Inferior Frontal (FA)
+Right Striatal Inferior Frontal (FA)
+Left Sup. Long. Fasc. (FA)
+Right Sup. Long. Fasc. (FA)
+Left Temporal Sup. Long. Fasc. (FA)
+Right Temporal Sup. Long. Fasc. (FA)
+Left Uncinate (FA)
+Right Uncinate (FA)
+lh-Banks of the Superior Temporal Sulcus (FA)
+rh-Banks of the Superior Temporal Sulcus (FA)
+cdancntelh (FA)
+cdancnterh (FA)
+cdmfrlh (FA)
+cdmfrrh (FA)
+lh-Cuneus (FA)
+rh-Cuneus (FA)
+lh-Entorhinal (FA)
+rh-Entorhinal (FA)
+lh-Frontal Pole (FA)
+rh-Frontal Pole (FA)
+lh-Fusiform (FA)
+rh-Fusiform (FA)
+ifpalh (FA)
+ifparh (FA)
+lh-Inferior Temporal (FA)
+rh-Inferior Temporal (FA)
+lh-Insula (FA)
+rh-Insula (FA)
+lh-Isthmus of Cingulate (FA)
+rh-Isthmus of Cingulate (FA)
+lh-Lateral Occipital (FA)
+rh-Lateral Occipital (FA)
+lh-Lateral Orbitofrontal (FA)
+rh-Lateral Orbitofrontal (FA)
+lh-Lingual (FA)
+rh-Lingual (FA)
+Whole Brain (FA)
+Left Hemisphere (FA)
+Right Hemisphere (FA)
+lh-Medial Orbitofrontal (FA)
+rh-Medial Orbitofrontal (FA)
+lh-Middle Temporal (FA)
+rh-Middle Temporal (FA)
+lh-Paracentral (FA)
+rh-Paracentral (FA)
+lh-Parahippocampal (FA)
+rh-Parahippocampal (FA)
+ppslh (FA)
+ppsrh (FA)
+lh-Pars Orbitalis (FA)
+rh-Pars Orbitalis (FA)
+lh-Pars Triangularis (FA)
+rh-Pars Triangularis (FA)
+pcrinelh (FA)
+pcrinerh (FA)
+lh-Postcentral (FA)
+rh-Postcentral (FA)
+lh-Posterior Cingulate (FA)
+pscnterh (FA)
+lh-Precentral (FA)
+rh-Precentral (FA)
+lh-Precuneus (FA)
+rh-Precuneus (FA)
+rncntelh (FA)
+rncnterh (FA)
+rsmfrlh (FA)
+rh-Rostral Middle Frontal (FA)
+lh-Superior Frontal (FA)
+rh-Superior Frontal (FA)
+lh-Superior Parietal (FA)
+spparh (FA)
+lh-Superior Temporal (FA)
+rh-Superior Temporal (FA)
+lh-Supramarginal (FA)
+rh-Supramarginal (FA)
+lh-Temporal Pole (FA)
+rh-Temporal Pole (FA)
+lh-Transverse Temporal (FA)
+rh-Transverse Temporal (FA)
+3rd Ventricle (FA)
+4th Ventricle (FA)
+Left Accumbens Area (FA)
+Right Accumbens Area (FA)
+Left Amygdala (FA)
+Right Amygdala (FA)
+Brain Stem (FA)
+Left Caudate (FA)
+Right Caudate (FA)
+Left Cerebellum Cortex (FA)
+Right Cerebellum Cortex (FA)
+Left Cerebellum White Matter (FA)
+Right Cerebellum White Matter (FA)
+Left Cerebral White Matter (FA)
+Right Cerebral White Matter (FA)
+Cerebrospinal Fluid (FA)
+Left Hippocampus (FA)
+Right Hippocampus (FA)
+Left Inf. Lateral Ventricle (FA)
+Right Inf. Lateral Ventricle (FA)
+Left Lateral Ventricle (FA)
+Right Lateral Ventricle (FA)
+Left Pallidum (FA)
+Right Pallidum (FA)
+Left Putamen (FA)
+Right Putamen (FA)
+Left Thalamus Proper (FA)
+Right Thalamus Proper (FA)
+Left Ventral DC (FA)
+Right Ventral DC (FA)
+All Fibers (Diff.)
+Left Hemisphere Fibers (Diff.)
+Left Hemisphere Fibers ex. CC (Diff.)
+Right Hemisphere Fibers ex. CC (Diff.)
+Right Hemisphere Fibers (Diff.)
+Left Anterior Thalamic Radiations (Diff.)
+Right Anterior Thalamic Radiations (Diff.)
+Corpus Callosum (Diff.)
+Left Cingulate Cingulum (Diff.)
+Right Cingulate Cingulum (Diff.)
+Left Parahippocampal Cingulum (Diff.)
+Right Parahippocampal Cingulum (Diff.)
+Left Corticospinal/Pyramidal (Diff.)
+Right Corticospinal/Pyramidal (Diff.)
+Forceps Major (Diff.)
+Forceps Minor (Diff.)
+Left Sup. Corticostriate-Frontal (Diff.)
+Right Sup. Corticostriate-Frontal (Diff.)
+Left Fornix (Excluding Fimbria) (Diff.)
+Right Fornix (Excluding Fimbria) (Diff.)
+Left Fornix (Diff.)
+Right Fornix (Diff.)
+Left Inf.-fronto-occipital Fasc. (Diff.)
+Right Inf.-fronto-occipital Fasiculus (Diff.)
+Left Inf. Frontal Sup.Frontal (Diff.)
+Right Inf. Frontal Superior Frontal (Diff.)
+Left Inf. Long. Fasc. (Diff.)
+Right Inf. Long. Fasc. (Diff.)
+Left Sup. Corticostriate-Parietal (Diff.)
+Right Sup. Corticostriate-Parietal (Diff.)
+Left Parietal Sup. Long. Fasc. (Diff.)
+Right Parietal Sup. Long. Fasc. (Diff.)
+Left Sup. Corticostriate (Diff.)
+Right Sup. Corticostriate (Diff.)
+Left Striatal Inferior Frontal (Diff.)
+Right Striatal Inferior Frontal (Diff.)
+Left Sup. Long. Fasc. (Diff.)
+Right Sup. Long. Fasc. (Diff.)
+Left Temporal Sup. Long. Fasc. (Diff.)
+Right Temporal Sup. Long. Fasc. (Diff.)
+Left Uncinate (Diff.)
+Right Uncinate (Diff.)
+lh-Banks of the Superior Temporal Sulcus (Diff.)
+rh-Banks of the Superior Temporal Sulcus (Diff.)
+cdancntelh (Diff.)
+cdancnterh (Diff.)
+cdmfrlh (Diff.)
+cdmfrrh (Diff.)
+lh-Cuneus (Diff.)
+rh-Cuneus (Diff.)
+lh-Entorhinal (Diff.)
+rh-Entorhinal (Diff.)
+lh-Frontal Pole (Diff.)
+rh-Frontal Pole (Diff.)
+lh-Fusiform (Diff.)
+rh-Fusiform (Diff.)
+ifpalh (Diff.)
+ifparh (Diff.)
+lh-Inferior Temporal (Diff.)
+rh-Inferior Temporal (Diff.)
+lh-Insula (Diff.)
+rh-Insula (Diff.)
+lh-Isthmus of Cingulate (Diff.)
+rh-Isthmus of Cingulate (Diff.)
+lh-Lateral Occipital (Diff.)
+rh-Lateral Occipital (Diff.)
+lh-Lateral Orbitofrontal (Diff.)
+rh-Lateral Orbitofrontal (Diff.)
+lh-Lingual (Diff.)
+rh-Lingual (Diff.)
+Whole Brain (Diff.)
+Left Hemisphere (Diff.)
+Right Hemisphere (Diff.)
+lh-Medial Orbitofrontal (Diff.)
+rh-Medial Orbitofrontal (Diff.)
+lh-Middle Temporal (Diff.)
+rh-Middle Temporal (Diff.)
+lh-Paracentral (Diff.)
+rh-Paracentral (Diff.)
+lh-Parahippocampal (Diff.)
+rh-Parahippocampal (Diff.)
+ppslh (Diff.)
+ppsrh (Diff.)
+lh-Pars Orbitalis (Diff.)
+rh-Pars Orbitalis (Diff.)
+lh-Pars Triangularis (Diff.)
+rh-Pars Triangularis (Diff.)
+pcrinelh (Diff.)
+pcrinerh (Diff.)
+lh-Postcentral (Diff.)
+rh-Postcentral (Diff.)
+lh-Posterior Cingulate (Diff.)
+pscnterh (Diff.)
+lh-Precentral (Diff.)
+rh-Precentral (Diff.)
+lh-Precuneus (Diff.)
+rh-Precuneus (Diff.)
+rncntelh (Diff.)
+rncnterh (Diff.)
+rsmfrlh (Diff.)
+rh-Rostral Middle Frontal (Diff.)
+lh-Superior Frontal (Diff.)
+rh-Superior Frontal (Diff.)
+lh-Superior Parietal (Diff.)
+spparh (Diff.)
+lh-Superior Temporal (Diff.)
+rh-Superior Temporal (Diff.)
+lh-Supramarginal (Diff.)
+rh-Supramarginal (Diff.)
+lh-Temporal Pole (Diff.)
+rh-Temporal Pole (Diff.)
+lh-Transverse Temporal (Diff.)
+rh-Transverse Temporal (Diff.)
+3rd Ventricle (Diff.)
+4th Ventricle (Diff.)
+Left Accumbens Area (Diff.)
+Right Accumbens Area (Diff.)
+Left Amygdala (Diff.)
+Right Amygdala (Diff.)
+Brain Stem (Diff.)
+Left Caudate (Diff.)
+Right Caudate (Diff.)
+Left Cerebellum Cortex (Diff.)
+Right Cerebellum Cortex (Diff.)
+Left Cerebellum White Matter (Diff.)
+Right Cerebellum White Matter (Diff.)
+Left Cerebral White Matter (Diff.)
+Right Cerebral White Matter (Diff.)
+Cerebrospinal Fluid (Diff.)
+Left Hippocampus (Diff.)
+Right Hippocampus (Diff.)
+Left Inf. Lateral Ventricle (Diff.)
+Right Inf. Lateral Ventricle (Diff.)
+Left Lateral Ventricle (Diff.)
+Right Lateral Ventricle (Diff.)
+Left Pallidum (Diff.)
+Right Pallidum (Diff.)
+Left Putamen (Diff.)
+Right Putamen (Diff.)
+Left Thalamus Proper (Diff.)
+Right Thalamus Proper (Diff.)
+Left Ventral DC (Diff.)
+Right Ventral DC (Diff.)
+All Fibers (Fiber TV.)
+Left Hemisphere Fibers (Fiber TV.)
+Left Hemisphere Fibers ex. CC (Fiber TV.)
+Right Hemisphere Fibers ex. CC (Fiber TV.)
+Right Hemisphere Fibers (Fiber TV.)
+Left Anterior Thalamic Radiations (Fiber TV.)
+Right Anterior Thalamic Radiations (Fiber TV.)
+Corpus Callosum (Fiber TV.)
+Left Cingulate Cingulum (Fiber TV.)
+Right Cingulate Cingulum (Fiber TV.)
+Left Parahippocampal Cingulum (Fiber TV.)
+Right Parahippocampal Cingulum (Fiber TV.)
+Left Corticospinal/Pyramidal (Fiber TV.)
+Right Corticospinal/Pyramidal (Fiber TV.)
+Forceps Major (Fiber TV.)
+Forceps Minor (Fiber TV.)
+Left Sup. Corticostriate-Frontal (Fiber TV.)
+Right Sup. Corticostriate-Frontal (Fiber TV.)
+Left Fornix (Excluding Fimbria) (Fiber TV.)
+Right Fornix (Excluding Fimbria) (Fiber TV.)
+Left Fornix (Fiber TV.)
+Right Fornix (Fiber TV.)
+Left Inf.-fronto-occipital Fasc. (Fiber TV.)
+Right Inf.-fronto-occipital Fasiculus (Fiber TV.)
+Left Inf. Frontal Sup.Frontal (Fiber TV.)
+Right Inf. Frontal Superior Frontal (Fiber TV.)
+Left Inf. Long. Fasc. (Fiber TV.)
+Right Inf. Long. Fasc. (Fiber TV.)
+Left Sup. Corticostriate-Parietal (Fiber TV.)
+Right Sup. Corticostriate-Parietal (Fiber TV.)
+Left Parietal Sup. Long. Fasc. (Fiber TV.)
+Right Parietal Sup. Long. Fasc. (Fiber TV.)
+Left Sup. Corticostriate (Fiber TV.)
+Right Sup. Corticostriate (Fiber TV.)
+Left Striatal Inferior Frontal (Fiber TV.)
+Right Striatal Inferior Frontal (Fiber TV.)
+Left Sup. Long. Fasc. (Fiber TV.)
+Right Sup. Long. Fasc. (Fiber TV.)
+Left Temporal Sup. Long. Fasc. (Fiber TV.)
+Right Temporal Sup. Long. Fasc. (Fiber TV.)
+Left Uncinate (Fiber TV.)
+Right Uncinate (Fiber TV.)
